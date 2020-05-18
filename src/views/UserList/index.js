@@ -8,14 +8,14 @@ import { TableCard, ModalForm, MessageBox } from '@/components'
 const mockUserList = [{
     id: 1,
     username: 'admin',
-    nickname: '管理员',
+    nickname: '',
     type: 'ADMIN',
     createTime: '2020-05-17 04:50:00'
 },
 {
     id: 2,
     username: 'admin',
-    nickname: '管理员',
+    nickname: '',
     type: 'ADMIN',
     createTime: '2020-05-17 04:50:00'
 }]
@@ -23,7 +23,10 @@ const mockUserList = [{
 export default class UserList extends Component {
     state = {
         isAddUserModalVisible: false,
+
         isUpdateUserModalVisible: false,
+        selectedUser: {},
+        selectedUserIndex: null,
     }
 
     handleAddUser = ({ username, remark }) => {
@@ -38,10 +41,10 @@ export default class UserList extends Component {
     }
 
     // 删除用户信息
-    handleDeleteUser = async () => {
+    handleDeleteUser = async (userInfo, index) => {
         try {
-            await MessageBox.dangerConfirm({content: '是否确认删除该用户', title: '删除用户'})
-        } catch(err) {
+            await MessageBox.dangerConfirm({ content: '是否确认删除该用户？' })
+        } catch (err) {
             return
         }
         // TODO: 删除用户
@@ -64,10 +67,18 @@ export default class UserList extends Component {
                         title="操作"
                         key="action"
                         align="center"
-                        render={(text, record) => (
+                        render={(text, record, index) => (
                             <Space size="middle">
-                                <Button size="small" type="primary" onClick={() => this.setState({ isUpdateUserModalVisible: true })}>编辑</Button>
-                                <Button size="small" danger onClick={this.handleDeleteUser}>删除</Button>
+                                <Button
+                                    size="small"
+                                    type="primary"
+                                    onClick={
+                                        () => this.setState({ isUpdateUserModalVisible: true, selectedUser: record, selectedUserIndex: index })
+                                    }
+                                >
+                                    编辑
+                                </Button>
+                                <Button size="small" danger onClick={() => this.handleDeleteUser(record, index)}>删除</Button>
                             </Space>
                         )}
                     />
@@ -102,7 +113,7 @@ export default class UserList extends Component {
                     visible={this.state.isUpdateUserModalVisible}
                     onCancel={() => this.setState({ isUpdateUserModalVisible: false })}
                     onFinish={this.handleUpdateUser}
-                    initialValues={{ nickname: '', remark: '' }}
+                    initialValues={this.state.selectedUser}
                 >
                     <Form.Item
                         name="nickname"
