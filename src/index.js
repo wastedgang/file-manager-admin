@@ -1,17 +1,31 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import React from 'react'
+import { render } from 'react-dom'
+import { HashRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+import { ConfigProvider } from 'antd'
+import zhCN from 'antd/es/locale/zh_CN';
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+import { mainRoutes } from '@/routes'
+import App from '@/App'
+import './index.less'
+
+render(
+    <ConfigProvider locale={zhCN}>
+        <Router>
+            <Switch>
+                <Route path="/admin" render={(props) => {
+                    // TODO: 权限，需要登录
+                    return <App {...props} />
+                }} />
+                {
+                    mainRoutes.map(route => {
+                        return <Route key={route.path} path={route.path} component={route.component} />
+                    })
+                }
+                <Redirect to="/admin" from="/" exact />
+                <Redirect to="/404" />
+            </Switch>
+        </Router>
+    </ConfigProvider>,
+    document.querySelector('#root')
+)

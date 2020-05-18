@@ -1,26 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import { Switch, Route, Redirect } from 'react-router-dom'
+import { adminRoutes } from '@/routes'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { AdminLayout } from '@/components'
+
+const menus = adminRoutes.filter(route => route.isNav === true)
+
+export default class App extends Component {
+    render() {
+        return (
+            <AdminLayout menus={menus}>
+                <Switch>
+                    {
+                        adminRoutes.map(route => {
+                            return <Route key={route.path} path={route.path} render={(props) => {
+                                return <route.component {...props} />
+                            }} />
+                        })
+                    }
+                    <Redirect to="/admin/my-space" from="/admin" exact />
+                    <Redirect to="/404" />
+                </Switch>
+            </AdminLayout>
+        )
+    }
 }
-
-export default App;
