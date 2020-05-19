@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 
-import { UserAddOutlined } from '@ant-design/icons'
+import { UserAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { Button, Table, Space, Input, Form } from 'antd'
 
-import { TableCard, ModalForm, MessageBox } from '@/components'
+import { ContentCard, ModalForm, MessageBox } from '@/components'
 
 const mockUserList = [{
     id: 1,
@@ -52,7 +52,7 @@ export default class UserList extends Component {
 
     render() {
         return (
-            <TableCard
+            <ContentCard
                 title="用户列表"
                 description="可添加、删除用户"
                 extra={<Button icon={<UserAddOutlined />} onClick={() => this.setState({ isAddUserModalVisible: true })}>添加用户</Button>}
@@ -76,9 +76,9 @@ export default class UserList extends Component {
                                         () => this.setState({ isUpdateUserModalVisible: true, selectedUser: record, selectedUserIndex: index })
                                     }
                                 >
-                                    编辑
+                                    <EditOutlined />编辑
                                 </Button>
-                                <Button size="small" danger onClick={() => this.handleDeleteUser(record, index)}>删除</Button>
+                                <Button size="small" danger onClick={() => this.handleDeleteUser(record, index)}><DeleteOutlined />删除</Button>
                             </Space>
                         )}
                     />
@@ -129,7 +129,7 @@ export default class UserList extends Component {
                         <Input.TextArea placeholder="备注" />
                     </Form.Item>
                 </ModalForm>
-            </TableCard>
+            </ContentCard>
         )
     }
 }
