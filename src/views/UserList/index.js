@@ -14,7 +14,7 @@ const mockUserList = [{
 },
 {
     id: 2,
-    username: 'admin',
+    username: 'admin2',
     nickname: '',
     type: 'ADMIN',
     createTime: '2020-05-17 04:50:00'
@@ -43,7 +43,7 @@ export default class UserList extends Component {
     // 删除用户信息
     handleDeleteUser = async (userInfo, index) => {
         try {
-            await MessageBox.dangerConfirm({ content: '是否确认删除该用户？' })
+            await MessageBox.dangerConfirm({ content: '是否确定删除该用户？' })
         } catch (err) {
             return
         }
@@ -54,7 +54,7 @@ export default class UserList extends Component {
         return (
             <ContentCard
                 title="用户列表"
-                description="可添加、删除用户"
+                description="可查看添加、编辑、删除用户信息"
                 extra={<Button icon={<UserAddOutlined />} onClick={() => this.setState({ isAddUserModalVisible: true })}>添加用户</Button>}
             >
                 <Table dataSource={mockUserList} pagination={false} rowKey='id' size="small">
@@ -95,7 +95,10 @@ export default class UserList extends Component {
                     <Form.Item
                         name="username"
                         label="用户名"
-                        rules={[{ required: true, message: '请输入用户名' }]}
+                        rules={[
+                            { required: true, message: '请输入用户名' },
+                            { pattern: /^[0-9A-Za-z_]{6,32}$/, message: '用户名必须由数字、英文字母和下划线组成，且长度为6~32个字符' },
+                        ]}
                     >
                         <Input placeholder="用户名" ref={input => { input && input.focus() }} />
                     </Form.Item>
@@ -115,6 +118,12 @@ export default class UserList extends Component {
                     onFinish={this.handleUpdateUser}
                     initialValues={this.state.selectedUser}
                 >
+                    <Form.Item
+                        name="username"
+                        label="用户名"
+                    >
+                        <Input placeholder="用户名" disabled={true} />
+                    </Form.Item>
                     <Form.Item
                         name="nickname"
                         label="昵称"

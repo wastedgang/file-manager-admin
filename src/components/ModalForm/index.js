@@ -6,7 +6,7 @@ class ModalForm extends Component {
     formRef = React.createRef()
 
     onSubmitForm = (values) => {
-        this.props.onFinish(values, this.props.extra ? this.props.extra: null)
+        this.props.onFinish(values, this.props.extra ? this.props.extra : null)
     }
 
     render() {
@@ -33,8 +33,6 @@ class ModalForm extends Component {
             >
                 <Form
                     {...formPropTypes}
-                    labelCol={{ span: 5, offset: 1 }}
-                    wrapperCol={{ span: 15 }}
                     ref={this.formRef}
                     onFinish={this.onSubmitForm}
                 >
@@ -77,10 +75,20 @@ class ModalForm extends Component {
         onFinishFailed: PropTypes.func,
         onFieldsChange: PropTypes.func,
         onValuesChange: PropTypes.func,
+        labelCol: PropTypes.shape({
+            span: PropTypes.number.isRequired,
+            offset: PropTypes.number,
+        }),
+        wrapperCol: PropTypes.shape({
+            span: PropTypes.number.isRequired,
+            offset: PropTypes.number,
+        })
     }
 
     static defaultProps = {
-        destroyOnClose: true
+        destroyOnClose: true,
+        labelCol: { span: 5, offset: 1 },
+        wrapperCol: { span: 15 }
     }
 
     static propTypes = {

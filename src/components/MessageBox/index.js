@@ -11,12 +11,24 @@ export default class MessageBox {
                 options.content = options.title
                 options.title = null
             }
-            if (!options.title && options.content && typeof options.content === 'string') {
+            if (!options.title && options.content && (typeof options.content === 'string' || options.content.map)) {
                 const icon = options.icon
+
+                let content = []
+                if (typeof options.content === 'string') {
+                    content = options.content
+                } else {
+                    for (let i = 0; i < options.content.length; i++) {
+                        content.push(options.content[i])
+                        if (i < options.content.length - 1 && typeof options.content[i] === 'string' && typeof options.content[i + 1] === 'string') {
+                            content.push(<br key={1589926444878 + i} />)
+                        }
+                    }
+                }
                 options.content = (
                     <div className="messagebox-icon-content">
                         {icon}
-                        <div className="messagebox-icon-content-text">{options.content}</div>
+                        <div className="messagebox-icon-content-text">{content}</div>
                     </div>
                 )
                 options.icon = null
