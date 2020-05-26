@@ -7,7 +7,7 @@ module.exports = override(
   addDecoratorsLegacy(),
 
   addWebpackAlias({
-    ["@"]: path.resolve(__dirname, "src")
+    ["@"]: path.resolve(__dirname, "src"),
   }),
 
   fixBabelImports('antd', {

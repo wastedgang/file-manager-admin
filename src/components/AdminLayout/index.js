@@ -1,13 +1,11 @@
 import React, { Component } from 'react'
 import { withRouter, Redirect, Route, Switch } from 'react-router-dom'
 
-import headerLogo from './admin-header-logo.png'
-import './admin-layout.less'
-
 import { Layout, Menu } from 'antd'
 import PropTypes from 'prop-types'
+import Header from './Header'
 
-const { Header, Content, Sider } = Layout
+const { Content, Sider } = Layout
 
 @withRouter
 class AdminLayout extends Component {
@@ -101,11 +99,7 @@ class AdminLayout extends Component {
     render() {
         return (
             <Layout style={{ minHeight: '100%' }}>
-                <Header className="admin-header">
-                    <div className="admin-header-logo">
-                        <img src={headerLogo} alt="warehouse" />
-                    </div>
-                </Header>
+                <Header/>
                 <Layout>
                     <Sider width={175}>
                         <Menu

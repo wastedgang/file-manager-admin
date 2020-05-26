@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Button, Table, Space, Tooltip, Dropdown, Menu, message } from 'antd'
+import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input } from 'antd'
 import {
     DeleteOutlined,
     UploadOutlined,
@@ -14,12 +14,14 @@ import {
     EyeOutlined,
     CopyOutlined,
     FormOutlined,
-    ScissorOutlined
+    ScissorOutlined,
+    FolderAddOutlined
 }
     from '@ant-design/icons'
 
-import { ContentCard, MessageBox } from '@/components'
+import { ContentCard, MessageBox, ModalForm } from '@/components'
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
+import UploadModal from './UploadModal'
 import queryString from 'query-string'
 import filesize from 'filesize'
 
@@ -93,7 +95,11 @@ class MySpace extends Component {
         currentPath: '',
         sort: null,
 
-        selectedRowKeys: []
+        selectedRowKeys: [],
+
+        isUploadModalVisible: false,
+
+        isAddFolderModalVisible: false,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -154,6 +160,12 @@ class MySpace extends Component {
         console.log('handleRenameFile', fileInfo)
     }
 
+    // TODO: 新建文件夹
+    handleAddFolder = ({ filename }) => {
+        console.log('handleAddFolder', filename)
+        this.setState({ isAddFolderModalVisible: false })
+    }
+
     // 打开文件项
     handleOpenFile = (fileInfo) => {
         const path = (!this.state.currentPath || this.state.currentPath === '/' ? '' : this.state.currentPath) + '/' + fileInfo.filename
@@ -202,11 +214,19 @@ class MySpace extends Component {
 
         const rowSelection = this.getTableRowSelection()
 
+        const batchActionMenuInfo = [
+            { icon: <CopyOutlined />, onClick: () => this.handleCopyFiles(this.state.selectedRowKeys), title: '复制' },
+            { icon: <ScissorOutlined />, onClick: () => this.handleMoveFiles(this.state.selectedRowKeys), title: '移动' },
+            { icon: <ShareAltOutlined />, onClick: () => this.handleShareFiles(this.state.selectedRowKeys), title: '共享' },
+            { icon: <DeleteOutlined />, onClick: () => this.handleDeleteFiles(this.state.selectedRowKeys), title: '删除' }
+        ]
         const batchActionMenu = (
             <Menu>
-                <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.handleCopyFiles(this.state.selectedRowKeys)}>复制</Menu.Item>
-                <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.handleMoveFiles(this.state.selectedRowKeys)}>移动</Menu.Item>
-                <Menu.Item key="4" icon={<DeleteOutlined />} onClick={() => this.handleDeleteFiles(this.state.selectedRowKeys)}>删除</Menu.Item>
+                {
+                    batchActionMenuInfo.map((item, index) => {
+                        return <Menu.Item key={index} {...item}>{item.title}</Menu.Item>
+                    })
+                }
             </Menu>
         )
         return (
@@ -218,7 +238,8 @@ class MySpace extends Component {
                         <Dropdown overlay={batchActionMenu} disabled={this.state.selectedRowKeys.length === 0}>
                             <Button icon={<MoreOutlined />}>批量操作</Button>
                         </Dropdown>
-                        <Button icon={<UploadOutlined />}>上传</Button>
+                        <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
+                        <Button icon={<UploadOutlined />} onClick={() => this.setState({ isUploadModalVisible: true })}>上传</Button>
                     </Space>
                 )}
             >
@@ -304,6 +325,31 @@ class MySpace extends Component {
                         }}
                     />
                 </Table>
+
+                {/* 新建文件夹对话框 */}
+                <ModalForm
+                    title="新建文件夹"
+                    labelCol={{ span: 5 }}
+                    wrapperCol={{ span: 17 }}
+                    visible={this.state.isAddFolderModalVisible}
+                    onCancel={() => this.setState({ isAddFolderModalVisible: false })}
+                    onFinish={this.handleAddFolder}
+                    initialValues={{ filename: '' }}
+                >
+                    <Form.Item
+                        name="filename"
+                        label="文件名"
+                        rules={[
+                            { required: true, message: '请输入文件名' },
+                            { pattern: /^[^/:]+$/, message: '请输入正确的文件名' }
+                        ]}
+                    >
+                        <Input placeholder="文件名" ref={input => { input && input.focus() }} />
+                    </Form.Item>
+                </ModalForm>
+
+                {/* 上传对话框 */}
+                <UploadModal visible={this.state.isUploadModalVisible} onCancel={() => { this.setState({ isUploadModalVisible: false }) }} />
             </ContentCard>
         )
     }

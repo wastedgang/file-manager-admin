@@ -49,7 +49,7 @@ export default class StoreSpaceList extends Component {
             <ContentCard
                 title="存储空间列表"
                 description="可查看添加、编辑、删除存储空间"
-                extra={<Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddStoreSpaceModalVisible: true })}>添加存储空间</Button>}
+                extra={<Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddStoreSpaceModalVisible: true })}>添加</Button>}
             >
                 <Table dataSource={mockStoreSpaceList} pagination={false} rowKey='id' size="small">
                     <Table.Column title="目录路径" dataIndex="directoryPath" key="directoryPath" align="center" />

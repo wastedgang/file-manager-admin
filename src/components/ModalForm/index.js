@@ -86,9 +86,10 @@ class ModalForm extends Component {
     }
 
     static defaultProps = {
+        closable: true,
         destroyOnClose: true,
         labelCol: { span: 5, offset: 1 },
-        wrapperCol: { span: 15 }
+        wrapperCol: { span: 15 },
     }
 
     static propTypes = {
