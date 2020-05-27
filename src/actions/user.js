@@ -1,5 +1,6 @@
 import actionTypes from './actionTypes'
 import { login as loginRequest } from '@/requests'
+import axios from 'axios'
 
 const startLogin = () => {
     return { type: actionTypes.START_LOGIN }
@@ -33,7 +34,10 @@ export const login = (loginInfo) => {
 }
 
 export const logout = () => {
-    return dispatch => {
+    return async (dispatch) => {
         dispatch(loginFailed())
+        try {
+            await axios.post('/api/v1/auth/logout')
+        } catch (err) { }
     }
 }

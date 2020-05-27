@@ -1,23 +1,35 @@
 import React, { Component } from 'react'
-import { Switch, Route } from 'react-router-dom'
-import { adminRoutes } from '@/config'
+import { Switch, Route, Redirect } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { routes } from '@/config'
 
-import { AdminLayout } from '@/components'
-
-export default class App extends Component {
+const mapState = state => ({
+    ...state.user
+})
+@connect(mapState)
+class App extends Component {
     render() {
         return (
-            <AdminLayout>
-                <Switch>
-                    {
-                        adminRoutes.map(route => {
-                            return <Route key={route.path} path={route.path} render={(props) => {
-                                return <route.component {...props} />
-                            }} />
-                        })
-                    }
-                </Switch>
-            </AdminLayout>
+            <Switch>
+                {
+                    this.props.isLogin ? null : <Redirect to="/admin/public-space" from="/admin" exact />
+                }
+                {
+                    routes.map((routeInfo) => {
+                        return (
+                            <Route path={routeInfo.path} key={routeInfo.path} render={(props) => {
+                                // TODO: 权限，需要登录
+                                return <routeInfo.component {...props} route={routeInfo} />
+                            }}>
+                            </Route>
+                        )
+                    })
+                }
+                <Redirect to="/admin" from="/" exact />
+                <Redirect to="/404" />
+            </Switch>
         )
     }
 }
+
+export default App

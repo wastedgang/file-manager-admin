@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { connect } from 'react-redux'
 
 import { Layout, Menu } from 'antd'
 import PropTypes from 'prop-types'
@@ -7,6 +8,10 @@ import Header from './Header'
 
 const { Content, Sider } = Layout
 
+const mapState = state => ({
+    ...state.user,
+})
+@connect(mapState)
 @withRouter
 class AdminLayout extends Component {
     onMenuClick = ({ key }) => {
@@ -29,10 +34,45 @@ class AdminLayout extends Component {
             )
         }
 
-        return routeInfo.children.map(route => {
+        const filteredRouteChildren = routeInfo.children.filter(item => {
+            if (!item.menu) {
+                return false
+            }
+            const permitRoles = item.menu.roles
+            if (!permitRoles) {
+                return true
+            }
+            if(!this.props.userInfo) {
+                return false
+            }
+            for (let role of permitRoles) {
+                if (role === this.props.userInfo.type) {
+                    return true
+                }
+            }
+            return false
+        })
+        return filteredRouteChildren.map(route => {
             let menuRoutes = []
             if (route.children && route.children.length && route.children.filter) {
-                menuRoutes = route.children.filter(item => item.menu)
+                menuRoutes = route.children.filter(item => {
+                    if (!item.menu) {
+                        return false
+                    }
+                    const permitRoles = item.menu.roles
+                    if (!permitRoles) {
+                        return true
+                    }
+                    if(!this.props.userInfo) {
+                        return false
+                    }
+                    for (let role of permitRoles) {
+                        if (role === this.props.userInfo.type) {
+                            return true
+                        }
+                    }
+                    return false
+                })
             }
 
             if (menuRoutes.length) {
@@ -99,7 +139,7 @@ class AdminLayout extends Component {
     render() {
         return (
             <Layout style={{ minHeight: '100%' }}>
-                <Header/>
+                <Header />
                 <Layout>
                     <Sider width={175}>
                         <Menu

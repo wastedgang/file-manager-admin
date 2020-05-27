@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input } from 'antd'
+import { connect } from 'react-redux'
+import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input, Spin, Upload } from 'antd'
 import {
     DeleteOutlined,
     UploadOutlined,
@@ -20,84 +21,26 @@ import {
     from '@ant-design/icons'
 
 import { ContentCard, MessageBox, ModalForm } from '@/components'
+import { addUploadTask, startUploadTask, updateCalculateProgress } from '@/actions/uploads'
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
-import UploadModal from './UploadModal'
 import queryString from 'query-string'
 import filesize from 'filesize'
+import axios from 'axios'
+import getFileContentHash from '@/md5'
 
 import './my-space.less'
 
-const mockFileList = [{
-    "id": 1,
-    "userId": 2,
-    "type": "DIRECTORY",
-    "directoryPath": "/",
-    "filename": "movies",
-    "fileSize": 0,
-    "mimeType": "",
-    "updateTime": "2020-04-12 03:39:06",
-    "createTime": "2020-04-12 03:39:06"
-}, {
-    "id": 3,
-    "userId": 2,
-    "type": "DIRECTORY",
-    "directoryPath": "/",
-    "filename": "test",
-    "fileSize": 0,
-    "mimeType": "",
-    "updateTime": "2020-04-12 03:42:33",
-    "createTime": "2020-04-12 03:42:33"
-}, {
-    "id": 4,
-    "userId": 2,
-    "type": "DIRECTORY",
-    "directoryPath": "/",
-    "filename": "测试文件夹",
-    "fileSize": 0,
-    "mimeType": "",
-    "updateTime": "2020-04-12 03:42:44",
-    "createTime": "2020-04-12 03:42:44"
-}, {
-    "id": 5,
-    "userId": 2,
-    "type": "FILE",
-    "directoryPath": "/",
-    "filename": "test.mp4",
-    "fileSize": 1234,
-    "mimeType": "video/mp4",
-    "updateTime": "2020-04-12 03:42:44",
-    "createTime": "2020-04-12 03:42:44"
-}, {
-    "id": 6,
-    "userId": 2,
-    "type": "FILE",
-    "directoryPath": "/",
-    "filename": "清明雨上.mp3",
-    "fileSize": 1234,
-    "mimeType": "audio/mp3",
-    "updateTime": "2020-04-12 03:42:44",
-    "createTime": "2020-04-12 03:42:44"
-}, {
-    "id": 7,
-    "userId": 2,
-    "type": "FILE",
-    "directoryPath": "/",
-    "filename": "明朝那些事儿.pdf",
-    "fileSize": 1234,
-    "mimeType": "application/pdf",
-    "updateTime": "2020-04-12 03:42:44",
-    "createTime": "2020-04-12 03:42:44"
-}]
-
+@connect(null, { addUploadTask, startUploadTask, updateCalculateProgress })
 @withRouter
 class MySpace extends Component {
     state = {
+        isFilesLoading: false,
         currentPath: '',
         sort: null,
+        shouldLoadFiles: false,
+        files: [],
 
         selectedRowKeys: [],
-
-        isUploadModalVisible: false,
 
         isAddFolderModalVisible: false,
     }
@@ -109,19 +52,44 @@ class MySpace extends Component {
         if (path === prevState.currentPath && sort === prevState.sort) {
             return null
         }
-        return { currentPath: path, sort: sort }
+        return { currentPath: path, sort: sort, shouldLoadFiles: true, selectedRowKeys: [] }
     }
 
     componentDidMount() {
         let { path, sort } = queryString.parse(this.props.location.search)
         path = path ? path : '/'
         sort = sort ? sort : null
-        this.setState({ currentPath: path, sort: sort })
-        this.fetchFileList()
+        this.setState({ currentPath: path, sort: sort, shouldLoadFiles: true })
     }
 
-    fetchFileList = () => {
-        // const path = this.props.location
+    componentDidUpdate() {
+        this.refreshFileList()
+    }
+
+    // 刷新文件列表
+    refreshFileList = async () => {
+        if (!this.state.shouldLoadFiles) {
+            return;
+        }
+        this.setState({ shouldLoadFiles: false })
+        let { path, sort } = queryString.parse(this.props.location.search)
+        path = path ? path : '/'
+        sort = sort ? sort : null
+        this.setState({ isFilesLoading: true, files: [] })
+        try {
+            const requestParams = { directory_path: path }
+            if (sort !== null) {
+                requestParams.sort = sort
+            }
+            const response = await axios.get('/api/v1/my_space/files', { params: requestParams })
+            if (response.data.code === '000000') {
+                this.setState({ files: response.data.data.files })
+            }
+        } catch (err) {
+            message.error('获取存储空间列表失败')
+        } finally {
+            this.setState({ isFilesLoading: false })
+        }
     }
 
     // TODO: 批量删除文件
@@ -160,10 +128,33 @@ class MySpace extends Component {
         console.log('handleRenameFile', fileInfo)
     }
 
-    // TODO: 新建文件夹
-    handleAddFolder = ({ filename }) => {
-        console.log('handleAddFolder', filename)
-        this.setState({ isAddFolderModalVisible: false })
+    // 新建文件夹
+    handleAddFolder = async ({ filename }) => {
+        try {
+            const requestData = { directory_path: this.state.currentPath, filename: filename }
+            const response = await axios.post('/api/v1/my_space/directory', requestData)
+            if (response.data.code === '000000') {
+                message.success('添加成功')
+                this.setState({ isAddFolderModalVisible: false, shouldLoadFiles: true })
+            }
+        } catch (err) {
+            message.error('添加文件夹失败')
+        }
+    }
+
+    handleBeforeUpload = (file) => {
+        this.props.addUploadTask(this.state.currentPath, file)
+
+        // 处理文件内容哈希值计算进程的变化
+        const onCalculateHashProgress = ({ total, current }) => {
+            this.props.updateCalculateProgress(file.uid, current / total * 100)
+        }
+        getFileContentHash({ file: file, onProgress: onCalculateHashProgress }).then(contentHash => {
+            this.props.startUploadTask(file.uid, contentHash)
+        }).catch((err) => {
+            message.error(file.name + '上传失败')
+        })
+        return false
     }
 
     // 打开文件项
@@ -239,92 +230,101 @@ class MySpace extends Component {
                             <Button icon={<MoreOutlined />}>批量操作</Button>
                         </Dropdown>
                         <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
-                        <Button icon={<UploadOutlined />} onClick={() => this.setState({ isUploadModalVisible: true })}>上传</Button>
+                        <Upload
+                            multiple={true}
+                            showUploadList={false}
+                            withCredentials={true}
+                            beforeUpload={this.handleBeforeUpload}
+                        >
+                            <Button icon={<UploadOutlined />}>上传</Button>
+                        </Upload>
                     </Space>
                 )}
             >
-                <Table
-                    dataSource={mockFileList}
-                    rowSelection={rowSelection}
-                    pagination={false}
-                    rowKey='filename'
-                    size="small"
-                >
-                    <Table.Column
-                        title=""
-                        key="mimeType"
-                        align="center"
-                        render={(text, record, index) => {
-                            if (record.type === 'DIRECTORY') {
-                                return <FolderFilled style={iconStyle} />
-                            }
-                            return <FileFilled style={iconStyle} />
-                        }}
-                    />
-                    <Table.Column title="文件名" dataIndex="filename" key="filename" align="center" />
-                    <Table.Column title="文件大小" dataIndex="record.fileSize" align="center" render={(text, record) => filesize(record.fileSize)} />
-                    <Table.Column title="最近修改时间" dataIndex="updateTime" key="updateTime" align="center" />
-                    <Table.Column
-                        title="操作"
-                        align="center"
-                        className="table-operation"
-                        render={(text, record, index) => {
-                            const moreActionMenu = (
-                                <Menu>
-                                    <Menu.Item key="1" icon={<FormOutlined />} onClick={() => this.handleRenameFile([record.filename])}>重命名</Menu.Item>
-                                    <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.handleCopyFiles([record.filename])}>复制</Menu.Item>
-                                    <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.handleMoveFiles([record.filename])}>移动</Menu.Item>
-                                    <Menu.Item key="4" icon={<DeleteOutlined />} onClick={() => this.handleDeleteFiles([record.filename])}>删除</Menu.Item>
-                                </Menu>
-                            )
-                            return (
-                                <Space size="middle">
-                                    {
-                                        ((record, index) => {
-                                            const buttonProps = {
-                                                size: "small",
-                                                type: "primary",
-                                                ghost: true,
-                                                onClick: () => {
-                                                    this.handleOpenFile(record, index)
+                <Spin spinning={this.state.isFilesLoading}>
+                    <Table
+                        dataSource={this.state.files}
+                        rowSelection={rowSelection}
+                        pagination={false}
+                        rowKey='filename'
+                        size="small"
+                    >
+                        <Table.Column
+                            title=""
+                            key="mimeType"
+                            align="center"
+                            render={(text, record, index) => {
+                                if (record.type === 'DIRECTORY') {
+                                    return <FolderFilled style={iconStyle} />
+                                }
+                                return <FileFilled style={iconStyle} />
+                            }}
+                        />
+                        <Table.Column title="文件名" dataIndex="filename" key="filename" align="center" />
+                        <Table.Column title="文件大小" dataIndex="record.fileSize" align="center" render={(text, record) => filesize(record.fileSize)} />
+                        <Table.Column title="最近修改时间" dataIndex="updateTime" key="updateTime" align="center" />
+                        <Table.Column
+                            title="操作"
+                            align="center"
+                            className="table-operation"
+                            render={(text, record, index) => {
+                                const moreActionMenu = (
+                                    <Menu>
+                                        <Menu.Item key="1" icon={<FormOutlined />} onClick={() => this.handleRenameFile([record.filename])}>重命名</Menu.Item>
+                                        <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.handleCopyFiles([record.filename])}>复制</Menu.Item>
+                                        <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.handleMoveFiles([record.filename])}>移动</Menu.Item>
+                                        <Menu.Item key="4" icon={<DeleteOutlined />} onClick={() => this.handleDeleteFiles([record.filename])}>删除</Menu.Item>
+                                    </Menu>
+                                )
+                                return (
+                                    <Space size="middle">
+                                        {
+                                            ((record, index) => {
+                                                const buttonProps = {
+                                                    size: "small",
+                                                    type: "primary",
+                                                    ghost: true,
+                                                    onClick: () => {
+                                                        this.handleOpenFile(record, index)
+                                                    }
                                                 }
-                                            }
-                                            if (record.mimeType === 'video/mp4' || record.mimeType === 'audio/mp3') {
-                                                return (
-                                                    <Tooltip placement="left" title="播放">
-                                                        <Button {...buttonProps}><PlayCircleOutlined /></Button>
-                                                    </Tooltip>
-                                                )
-                                            } else if (record.type === 'DIRECTORY') {
-                                                return (
-                                                    <Tooltip placement="left" title="打开">
-                                                        <Button {...buttonProps}><FolderOpenOutlined /></Button>
-                                                    </Tooltip>
-                                                )
-                                            } else {
-                                                return (
-                                                    <Tooltip placement="left" title="查看">
-                                                        <Button {...buttonProps}><EyeOutlined /></Button>
-                                                    </Tooltip>
-                                                )
-                                            }
-                                        })(record)
-                                    }
-                                    <Tooltip placement="top" title="下载">
-                                        <Button size="small" type="dashed" onClick={() => this.handleDownloadFiles([record.filename])}><DownloadOutlined /></Button>
-                                    </Tooltip>
+                                                if (record.mimeType === 'video/mp4' || record.mimeType === 'audio/mp3') {
+                                                    return (
+                                                        <Tooltip placement="left" title="播放">
+                                                            <Button {...buttonProps}><PlayCircleOutlined /></Button>
+                                                        </Tooltip>
+                                                    )
+                                                } else if (record.type === 'DIRECTORY') {
+                                                    return (
+                                                        <Tooltip placement="left" title="打开">
+                                                            <Button {...buttonProps}><FolderOpenOutlined /></Button>
+                                                        </Tooltip>
+                                                    )
+                                                } else {
+                                                    return (
+                                                        <Tooltip placement="left" title="查看">
+                                                            <Button {...buttonProps}><EyeOutlined /></Button>
+                                                        </Tooltip>
+                                                    )
+                                                }
+                                            })(record)
+                                        }
+                                        <Tooltip placement="top" title="下载">
+                                            <Button size="small" type="dashed" onClick={() => this.handleDownloadFiles([record.filename])}><DownloadOutlined /></Button>
+                                        </Tooltip>
 
-                                    <Tooltip placement="top" title="共享">
-                                        <Button className="btn-share" size="small" onClick={() => this.handleShareFiles([record.filename])}><ShareAltOutlined /></Button>
-                                    </Tooltip>
-                                    <Dropdown overlay={moreActionMenu}>
-                                        <Button size="small"><MoreOutlined /></Button>
-                                    </Dropdown>
-                                </Space>
-                            )
-                        }}
-                    />
-                </Table>
+                                        <Tooltip placement="top" title="共享">
+                                            <Button className="btn-share" size="small" onClick={() => this.handleShareFiles([record.filename])}><ShareAltOutlined /></Button>
+                                        </Tooltip>
+                                        <Dropdown overlay={moreActionMenu}>
+                                            <Button size="small"><MoreOutlined /></Button>
+                                        </Dropdown>
+                                    </Space>
+                                )
+                            }}
+                        />
+                    </Table>
+                </Spin>
 
                 {/* 新建文件夹对话框 */}
                 <ModalForm
@@ -347,9 +347,6 @@ class MySpace extends Component {
                         <Input placeholder="文件名" ref={input => { input && input.focus() }} />
                     </Form.Item>
                 </ModalForm>
-
-                {/* 上传对话框 */}
-                <UploadModal visible={this.state.isUploadModalVisible} onCancel={() => { this.setState({ isUploadModalVisible: false }) }} />
             </ContentCard>
         )
     }

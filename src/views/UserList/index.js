@@ -1,24 +1,11 @@
 import React, { Component } from 'react'
 
 import { UserAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Button, Table, Space, Input, Form } from 'antd'
+import { Button, Table, Space, Input, Form, message } from 'antd'
 
 import { ContentCard, ModalForm, MessageBox } from '@/components'
 
-const mockUserList = [{
-    id: 1,
-    username: 'admin',
-    nickname: '',
-    type: 'ADMIN',
-    createTime: '2020-05-17 04:50:00'
-},
-{
-    id: 2,
-    username: 'admin2',
-    nickname: '',
-    type: 'ADMIN',
-    createTime: '2020-05-17 04:50:00'
-}]
+import axios from 'axios'
 
 export default class UserList extends Component {
     state = {
@@ -27,17 +14,39 @@ export default class UserList extends Component {
         isUpdateUserModalVisible: false,
         selectedUser: {},
         selectedUserIndex: null,
+        users: [],
     }
 
-    handleAddUser = ({ username, remark }) => {
-        // TODO: 添加用户
-        this.setState({ isAddUserModalVisible: false })
+    handleAddUser = async ({ username, remark }) => {
+        // 添加用户
+        try {
+            const response = await axios.post('/api/v1/user', { username: username, remark: remark })
+            if (response.data.code === '000000') {
+                this.refreshUserList()
+                message.success('添加成功')
+                this.setState({ isAddUserModalVisible: false })
+                return
+            }
+        } catch (err) {
+            message.error('添加失败')
+        }
     }
 
     // 编辑用户信息
-    handleUpdateUser = ({ nickname, remark }) => {
-        // TODO: 更新用户信息
-        this.setState({ isUpdateUserModalVisible: false })
+    handleUpdateUser = async ({ nickname, remark }) => {
+        // 更新用户信息
+        try {
+            const requestData = { nickname: nickname, remark: remark }
+            const response = await axios.put('/api/v1/user/' + this.state.selectedUser.username + '/info', requestData)
+            if (response.data.code === '000000') {
+                this.refreshUserList()
+                message.success('修改成功')
+                this.setState({ isUpdateUserModalVisible: false })
+                return
+            }
+        } catch (err) {
+            message.error('修改失败')
+        }
     }
 
     // 删除用户信息
@@ -47,7 +56,34 @@ export default class UserList extends Component {
         } catch (err) {
             return
         }
-        // TODO: 删除用户
+
+        // 删除用户
+        try {
+            const response = await axios.delete('/api/v1/user/' + userInfo.username)
+            if (response.data.code === '000000') {
+                message.success('删除成功')
+                this.refreshUserList()
+                return
+            }
+        } catch (err) {
+            message.error('删除失败')
+        }
+    }
+
+    // 刷新用户列表
+    refreshUserList = async () => {
+        try {
+            const response = await axios.get('/api/v1/users')
+            if (response.data.code && response.data.code === '000000') {
+                this.setState({ users: response.data.data.users })
+            }
+        } catch (err) {
+            message.error('获取用户列表失败')
+        }
+    }
+
+    componentDidMount = () => {
+        this.refreshUserList()
     }
 
     render() {
@@ -57,10 +93,25 @@ export default class UserList extends Component {
                 description="可查看添加、编辑、删除用户信息"
                 extra={<Button icon={<UserAddOutlined />} onClick={() => this.setState({ isAddUserModalVisible: true })}>添加用户</Button>}
             >
-                <Table dataSource={mockUserList} pagination={false} rowKey='id' size="small">
+                <Table dataSource={this.state.users} pagination={false} rowKey='username' size="small">
                     <Table.Column title="用户名" dataIndex="username" key="username" align="center" />
                     <Table.Column title="昵称" dataIndex="nickname" key="nickname" align="center" />
-                    <Table.Column title="用户类型" dataIndex="type" key="type" align="center" />
+                    <Table.Column
+                        title="用户类型"
+                        dataIndex="type"
+                        key="type"
+                        align="center"
+                        render={(text, record, index) => {
+                            switch (text) {
+                                case 'SYSTEM_ADMIN':
+                                    return '管理员'
+                                case 'NORMAL':
+                                    return '普通用户'
+                                default:
+                                    return '未知用户类型'
+                            }
+                        }}
+                    />
                     <Table.Column title="备注" dataIndex="remark" key="remark" align="center" />
                     <Table.Column title="创建时间" dataIndex="createTime" key="createTime" align="center" />
                     <Table.Column

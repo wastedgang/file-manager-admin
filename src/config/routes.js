@@ -6,8 +6,10 @@ import {
     UserList,
     DatabaseSetting,
     StoreSpaceList,
+    GroupList,
+    PublicSpace,
 } from '@/views'
-import { HomeOutlined, UserOutlined, SettingOutlined, ContainerOutlined, DatabaseOutlined } from '@ant-design/icons'
+import { HomeOutlined, UserOutlined, SettingOutlined, ContainerOutlined, DatabaseOutlined, TeamOutlined, GlobalOutlined } from '@ant-design/icons'
 
 
 const routes = [{
@@ -25,20 +27,38 @@ const routes = [{
         component: MySpace,
         title: '我的空间',
         menu: {
-            icon: HomeOutlined
+            icon: HomeOutlined,
+            roles: ['SYSTEM_ADMIN', 'NORMAL'],
+        },
+    }, {
+        path: '/admin/public-space',
+        component: PublicSpace,
+        title: '公共空间',
+        menu: {
+            icon: GlobalOutlined
+        },
+    }, {
+        path: '/admin/groups',
+        component: GroupList,
+        title: '群组管理',
+        menu: {
+            icon: TeamOutlined,
+            roles: ['SYSTEM_ADMIN', 'NORMAL'],
         },
     }, {
         path: '/admin/users',
         component: UserList,
         title: '用户管理',
         menu: {
-            icon: UserOutlined
+            icon: UserOutlined,
+            roles: ['SYSTEM_ADMIN'],
         },
     }, {
         path: '/admin/settings',
         title: '系统设置',
         menu: {
-            icon: SettingOutlined
+            icon: SettingOutlined,
+            roles: ['SYSTEM_ADMIN'],
         },
         redirect: '/admin/settings/store-spaces',
         children: [{
@@ -46,14 +66,16 @@ const routes = [{
             component: StoreSpaceList,
             title: '存储空间管理',
             menu: {
-                icon: ContainerOutlined
+                icon: ContainerOutlined,
+                roles: ['SYSTEM_ADMIN'],
             },
         }, {
             path: '/admin/settings/database',
             component: DatabaseSetting,
             title: '数据库信息',
             menu: {
-                icon: DatabaseOutlined
+                icon: DatabaseOutlined,
+                roles: ['SYSTEM_ADMIN'],
             },
         }]
     }]

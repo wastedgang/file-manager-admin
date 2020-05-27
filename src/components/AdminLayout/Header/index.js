@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { withRouter, Link } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { Layout, Dropdown, Menu } from 'antd'
-import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons'
+import { Layout, Dropdown, Menu, Divider, Popover } from 'antd'
+import { DownOutlined, LogoutOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { logout } from '@/actions/user'
+import { UploadTaskList } from '@/components'
 
 import './header.less'
 import headerLogo from './header-logo.png'
-import { logout } from '@/actions/user'
 
 const mapState = state => ({
     ...state.user
@@ -39,15 +40,29 @@ class Header extends Component {
                     <img src={headerLogo} alt="warehouse" />
                 </div>
 
+                {
+                    !this.props.isLogin ? null : (
+                        <Fragment>
+                            <div>
+                                <Popover content={<UploadTaskList />} placement="bottomRight"><UnorderedListOutlined />&nbsp;&nbsp;上传记录</Popover>
+                            </div>
+
+                            <div>
+                                <Divider type="vertical" />
+                            </div>
+                        </Fragment>
+                    )
+                }
+
                 <div>
                     {
                         this.props.isLogin ?
-                            (<Dropdown overlay={menu}>
-                                <div>
-                                    你好，{this.props.userInfo.nickname ? this.props.userInfo.nickname : this.props.userInfo.username} <DownOutlined />
-                                </div>
-                            </Dropdown>
-
+                            (
+                                <Dropdown overlay={menu} trigger="click">
+                                    <div>
+                                        你好，{this.props.userInfo.nickname ? this.props.userInfo.nickname : this.props.userInfo.username} <DownOutlined />
+                                    </div>
+                                </Dropdown>
                             ) : (
                                 <div>你好，游客&nbsp; <Link to="/login">去登录</Link></div>
                             )
