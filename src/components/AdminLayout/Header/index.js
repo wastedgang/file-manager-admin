@@ -44,7 +44,9 @@ class Header extends Component {
                     !this.props.isLogin ? null : (
                         <Fragment>
                             <div>
-                                <Popover content={<UploadTaskList />} placement="bottomRight"><UnorderedListOutlined />&nbsp;&nbsp;上传记录</Popover>
+                                <Popover content={<UploadTaskList />} placement="bottomRight" trigger="click">
+                                    <UnorderedListOutlined />&nbsp;&nbsp;上传记录
+                                </Popover>
                             </div>
 
                             <div>

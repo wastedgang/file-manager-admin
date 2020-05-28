@@ -108,7 +108,6 @@ class AdminLayout extends Component {
         else {
             routeList.push((
                 <Route path={routeInfo.path} key={routeInfo.path} render={(props) => {
-                    // TODO: 权限，需要登录
                     return <routeInfo.component {...props} route={routeInfo} />
                 }} />
             ))

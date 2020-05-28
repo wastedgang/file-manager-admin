@@ -18,7 +18,6 @@ class App extends Component {
                     routes.map((routeInfo) => {
                         return (
                             <Route path={routeInfo.path} key={routeInfo.path} render={(props) => {
-                                // TODO: 权限，需要登录
                                 return <routeInfo.component {...props} route={routeInfo} />
                             }}>
                             </Route>

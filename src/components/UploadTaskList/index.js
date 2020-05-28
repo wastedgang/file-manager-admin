@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { List, Progress, Button, Spin, Tooltip } from 'antd'
-import { CloseOutlined, DeleteOutlined, RedoOutlined, LoadingOutlined } from '@ant-design/icons'
+import { CloseOutlined, DeleteOutlined, RedoOutlined, LoadingOutlined, PauseOutlined } from '@ant-design/icons'
 import { connect } from 'react-redux'
 import { removeUploadTask, cancelUploadTask, restartUploadTask } from '@/actions/uploads'
 
@@ -27,7 +27,8 @@ class UploadTaskList extends Component {
                         )]
                     } else if (item.status === 'UPLOADING') {
                         actions = [(
-                            <Button size="small" disabled={item.uploadProgress === 100} shape="circle" icon={<CloseOutlined />} danger onClick={() => this.props.cancelUploadTask(item.id)} />
+                            <Button size="small" disabled={item.uploadProgress === 100} shape="circle" icon={<PauseOutlined />} danger 
+                            onClick={() => this.props.cancelUploadTask(item.id)} />
                         )]
                     } else if (item.status === 'CANCELED') {
                         actions = [(

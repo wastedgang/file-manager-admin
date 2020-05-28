@@ -191,7 +191,7 @@ export default class StoreSpaceList extends Component {
                             { pattern: /^\/.*$/, message: '请输入正确的目录路径(必须为绝对路径)' }
                         ]}
                     >
-                        <Input placeholder="目录路径" autoFocus={true} />
+                        <Input placeholder="目录路径" disabled={true} />
                     </Form.Item>
                     <Form.Item
                         name="allocateSize"
@@ -204,6 +204,7 @@ export default class StoreSpaceList extends Component {
                             min={1}
                             placeholder="分配空间大小"
                             style={{ width: 150 }}
+                            autoFocus={true}
                         />
                     </Form.Item>
                     <Form.Item

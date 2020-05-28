@@ -28,7 +28,6 @@ import ExplorerBreadcrumb from './ExplorerBreadcrumb'
 import queryString from 'query-string'
 import filesize from 'filesize'
 import axios from 'axios'
-import getFileContentHash from '@/md5'
 
 import './my-space.less'
 
@@ -152,16 +151,6 @@ class MySpace extends Component {
 
     handleBeforeUpload = (file) => {
         this.props.addUploadTask(this.state.currentPath, file)
-
-        // 处理文件内容哈希值计算进程的变化
-        const onCalculateHashProgress = ({ total, current }) => {
-            this.props.updateCalculateProgress(file.uid, current / total * 100)
-        }
-        getFileContentHash({ file: file, onProgress: onCalculateHashProgress }).then(contentHash => {
-            this.props.startUploadTask(file.uid, contentHash)
-        }).catch((err) => {
-            message.error(file.name + '上传失败')
-        })
         return false
     }
 
