@@ -267,6 +267,14 @@ class MySpace extends Component {
                                 }
                                 return <FileFilled style={iconStyle} />
                             }}
+                            showSorterTooltip={false} sortDirections={['ascend']} sorter={(a, b) => {
+                                if(a.type === 'DIRECTORY' && b.type === 'DIRECTORY') return 0
+                                if(a.type === 'DIRECTORY') return -1
+                                if(b.type === 'DIRECTORY') return 1
+                                if(a.mimeType === b.mimeType) return 0
+                                else if(a.mimeType < b.mimeType) return -1
+                                return 1
+                            }}
                         />
                         <Table.Column title="文件名" dataIndex="filename" key="filename" align="center" showSorterTooltip={false} sorter={(a, b) => {
                             if (a.filename === b.filename) return 0
