@@ -21,14 +21,13 @@ import {
     from '@ant-design/icons'
 
 import { ContentCard, MessageBox, ModalForm } from '@/components'
-import { addUploadTask, startUploadTask, updateCalculateProgress } from '@/actions/uploads'
+import { startUploadTask } from '@/actions/uploads'
 import { refreshFileList } from '@/actions/files'
 
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
 import queryString from 'query-string'
 import filesize from 'filesize'
 import axios from 'axios'
-import getFileContentHash from '@/md5'
 
 import './my-space.less'
 
@@ -37,7 +36,7 @@ const mapState = state => ({
     files: state.files.files,
     uploadedCount: state.uploads.uploadedCount,
 })
-@connect(mapState, { addUploadTask, startUploadTask, updateCalculateProgress, refreshFileList })
+@connect(mapState, { startUploadTask, refreshFileList })
 @withRouter
 class MySpace extends Component {
     state = {
@@ -151,17 +150,7 @@ class MySpace extends Component {
     }
 
     handleBeforeUpload = (file) => {
-        this.props.addUploadTask(this.state.currentPath, file)
-
-        // 处理文件内容哈希值计算进程的变化
-        const onCalculateHashProgress = ({ total, current }) => {
-            this.props.updateCalculateProgress(file.uid, current / total * 100)
-        }
-        getFileContentHash({ file: file, onProgress: onCalculateHashProgress }).then(contentHash => {
-            this.props.startUploadTask(file.uid, contentHash)
-        }).catch((err) => {
-            message.error(file.name + '上传失败')
-        })
+        this.props.startUploadTask(this.state.currentPath, file)
         return false
     }
 
@@ -268,11 +257,11 @@ class MySpace extends Component {
                                 return <FileFilled style={iconStyle} />
                             }}
                             showSorterTooltip={false} sortDirections={['ascend']} sorter={(a, b) => {
-                                if(a.type === 'DIRECTORY' && b.type === 'DIRECTORY') return 0
-                                if(a.type === 'DIRECTORY') return -1
-                                if(b.type === 'DIRECTORY') return 1
-                                if(a.mimeType === b.mimeType) return 0
-                                else if(a.mimeType < b.mimeType) return -1
+                                if (a.type === 'DIRECTORY' && b.type === 'DIRECTORY') return 0
+                                if (a.type === 'DIRECTORY') return -1
+                                if (b.type === 'DIRECTORY') return 1
+                                if (a.mimeType === b.mimeType) return 0
+                                else if (a.mimeType < b.mimeType) return -1
                                 return 1
                             }}
                         />

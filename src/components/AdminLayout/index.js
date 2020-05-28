@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import { withRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { connect } from 'react-redux'
-
 import { Layout, Menu } from 'antd'
+
 import PropTypes from 'prop-types'
+
 import Header from './Header'
 
 const { Content, Sider } = Layout
-
 const mapState = state => ({
     ...state.user,
 })
@@ -42,7 +42,7 @@ class AdminLayout extends Component {
             if (!permitRoles) {
                 return true
             }
-            if(!this.props.userInfo) {
+            if (!this.props.userInfo) {
                 return false
             }
             for (let role of permitRoles) {
@@ -63,7 +63,7 @@ class AdminLayout extends Component {
                     if (!permitRoles) {
                         return true
                     }
-                    if(!this.props.userInfo) {
+                    if (!this.props.userInfo) {
                         return false
                     }
                     for (let role of permitRoles) {

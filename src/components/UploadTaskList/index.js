@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { List, Progress, Button, Spin, Tooltip } from 'antd'
-import { CloseOutlined, DeleteOutlined, RedoOutlined, LoadingOutlined, PauseOutlined } from '@ant-design/icons'
+import { List, Progress, Button, Tooltip } from 'antd'
+import { DeleteOutlined, RedoOutlined, PauseOutlined } from '@ant-design/icons'
 import { connect } from 'react-redux'
-import { removeUploadTask, cancelUploadTask, restartUploadTask } from '@/actions/uploads'
+import { removeUploadTask, cancelUploadTask, startUploadTask } from '@/actions/uploads'
 
 import './upload.less'
 
@@ -10,7 +10,7 @@ const mapState = state => ({
     uploadTaskList: state.uploads.uploadTaskList
 })
 
-@connect(mapState, { removeUploadTask, cancelUploadTask, restartUploadTask })
+@connect(mapState, { removeUploadTask, cancelUploadTask, startUploadTask })
 class UploadTaskList extends Component {
     render() {
         return (
@@ -18,17 +18,13 @@ class UploadTaskList extends Component {
                 itemLayout="horizontal"
                 className="upload-task-list"
                 dataSource={this.props.uploadTaskList}
-                pagination={{pageSize: 11}}
+                pagination={{ pageSize: 11 }}
                 renderItem={item => {
                     let actions = null
-                    if (item.status === 'STARTING') {
+                    if (item.status === 'UPLOADING') {
                         actions = [(
-                            <Spin indicator={<LoadingOutlined />} />
-                        )]
-                    } else if (item.status === 'UPLOADING') {
-                        actions = [(
-                            <Button size="small" disabled={item.uploadProgress === 100} shape="circle" icon={<PauseOutlined />} danger 
-                            onClick={() => this.props.cancelUploadTask(item.id)} />
+                            <Button size="small" disabled={item.progress === 100} shape="circle" icon={<PauseOutlined />} danger
+                                onClick={() => this.props.cancelUploadTask(item.id)} />
                         )]
                     } else if (item.status === 'CANCELED') {
                         actions = [(
@@ -43,14 +39,12 @@ class UploadTaskList extends Component {
                     }
 
                     let progressBar = null
-                    if (item.status === 'STARTING') {
-                        progressBar = <Progress percent={item.hashCalculateProgress} status="active" strokeColor="#faad14" />
-                    } else if (item.status === 'UPLOADED') {
-                        progressBar = <Progress percent={item.uploadProgress} />
+                    if (item.status === 'UPLOADED') {
+                        progressBar = <Progress percent={item.progress} />
                     } else if (item.status === 'CANCELED') {
-                        progressBar = <Progress percent={item.uploadProgress} status="exception" />
+                        progressBar = <Progress percent={item.progress} status="exception" />
                     } else {
-                        progressBar = <Progress percent={item.uploadProgress} status="active" />
+                        progressBar = <Progress percent={item.progress} status="active" />
                     }
                     return (
                         <List.Item
