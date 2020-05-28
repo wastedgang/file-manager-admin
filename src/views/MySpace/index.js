@@ -22,6 +22,8 @@ import {
 
 import { ContentCard, MessageBox, ModalForm } from '@/components'
 import { addUploadTask, startUploadTask, updateCalculateProgress } from '@/actions/uploads'
+import { refreshFileList } from '@/actions/files'
+
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
 import queryString from 'query-string'
 import filesize from 'filesize'
@@ -30,29 +32,49 @@ import getFileContentHash from '@/md5'
 
 import './my-space.less'
 
-@connect(null, { addUploadTask, startUploadTask, updateCalculateProgress })
+const mapState = state => ({
+    isFilesLoading: state.files.isLoading,
+    files: state.files.files,
+    uploadedCount: state.uploads.uploadedCount,
+})
+@connect(mapState, { addUploadTask, startUploadTask, updateCalculateProgress, refreshFileList })
 @withRouter
 class MySpace extends Component {
     state = {
-        isFilesLoading: false,
         currentPath: '',
         sort: null,
         shouldLoadFiles: false,
-        files: [],
 
         selectedRowKeys: [],
 
         isAddFolderModalVisible: false,
+
+        currentUploadedCount: 0,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
         let { path, sort } = queryString.parse(nextProps.location.search)
         path = path ? path : '/'
         sort = sort ? sort : null
-        if (path === prevState.currentPath && sort === prevState.sort) {
+        if (nextProps.uploadedCount === prevState && path === prevState.currentPath && sort === prevState.sort) {
             return null
         }
-        return { currentPath: path, sort: sort, shouldLoadFiles: true, selectedRowKeys: [] }
+
+        const newState = {}
+        if (nextProps.uploadedCount !== prevState.currentUploadedCount) {
+            newState.shouldLoadFiles = true
+            newState.currentUploadedCount = nextProps.uploadedCount
+        }
+        if (path !== prevState.currentPath) {
+            newState.shouldLoadFiles = true
+            newState.currentPath = path
+            newState.selectedRowKeys = []
+        }
+        if (sort !== prevState.sort) {
+            newState.shouldLoadFiles = true
+            newState.sort = sort
+        }
+        return newState
     }
 
     componentDidMount() {
@@ -67,7 +89,7 @@ class MySpace extends Component {
     }
 
     // 刷新文件列表
-    refreshFileList = async () => {
+    refreshFileList = () => {
         if (!this.state.shouldLoadFiles) {
             return;
         }
@@ -75,21 +97,7 @@ class MySpace extends Component {
         let { path, sort } = queryString.parse(this.props.location.search)
         path = path ? path : '/'
         sort = sort ? sort : null
-        this.setState({ isFilesLoading: true, files: [] })
-        try {
-            const requestParams = { directory_path: path }
-            if (sort !== null) {
-                requestParams.sort = sort
-            }
-            const response = await axios.get('/api/v1/my_space/files', { params: requestParams })
-            if (response.data.code === '000000') {
-                this.setState({ files: response.data.data.files })
-            }
-        } catch (err) {
-            message.error('获取存储空间列表失败')
-        } finally {
-            this.setState({ isFilesLoading: false })
-        }
+        this.props.refreshFileList({ path, sort })
     }
 
     // TODO: 批量删除文件
@@ -241,16 +249,16 @@ class MySpace extends Component {
                     </Space>
                 )}
             >
-                <Spin spinning={this.state.isFilesLoading}>
+                <Spin spinning={this.props.isFilesLoading}>
                     <Table
-                        dataSource={this.state.files}
+                        dataSource={this.props.files}
                         rowSelection={rowSelection}
                         pagination={false}
                         rowKey='filename'
                         size="small"
                     >
                         <Table.Column
-                            title=""
+                            title="类型"
                             key="mimeType"
                             align="center"
                             render={(text, record, index) => {
@@ -260,12 +268,23 @@ class MySpace extends Component {
                                 return <FileFilled style={iconStyle} />
                             }}
                         />
-                        <Table.Column title="文件名" dataIndex="filename" key="filename" align="center" />
-                        <Table.Column title="文件大小" dataIndex="record.fileSize" align="center" render={(text, record) => filesize(record.fileSize)} />
-                        <Table.Column title="最近修改时间" dataIndex="updateTime" key="updateTime" align="center" />
+                        <Table.Column title="文件名" dataIndex="filename" key="filename" align="center" showSorterTooltip={false} sorter={(a, b) => {
+                            if (a.filename === b.filename) return 0
+                            if (a.filename < b.filename) return -1
+                            else return 1
+                        }} />
+                        <Table.Column title="文件大小" dataIndex="record.fileSize" align="center" showSorterTooltip={false} sorter={(a, b) => {
+                            return a.fileSize - b.fileSize
+                        }} render={(text, record) => filesize(record.fileSize)} />
+                        <Table.Column title="最近修改时间" dataIndex="updateTime" key="updateTime" align="center" showSorterTooltip={false} sorter={(a, b) => {
+                            if (a.updateTime === b.updateTime) return 0
+                            if (a.updateTime < b.updateTime) return -1
+                            else return 1
+                        }} />
                         <Table.Column
                             title="操作"
                             align="center"
+                            width={370}
                             className="table-operation"
                             render={(text, record, index) => {
                                 const moreActionMenu = (

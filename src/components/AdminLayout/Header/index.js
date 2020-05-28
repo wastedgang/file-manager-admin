@@ -58,7 +58,7 @@ class Header extends Component {
                     {
                         this.props.isLogin ?
                             (
-                                <Dropdown overlay={menu} trigger="click">
+                                <Dropdown overlay={menu} trigger={['hover']}>
                                     <div>
                                         你好，{this.props.userInfo.nickname ? this.props.userInfo.nickname : this.props.userInfo.username} <DownOutlined />
                                     </div>
