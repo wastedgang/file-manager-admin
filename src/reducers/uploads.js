@@ -8,12 +8,12 @@ const initState = {
 export default (state = initState, action) => {
     switch (action.type) {
         case actionTypes.START_UPLOAD_TASK:
-            const { uploadDirectoryPath, file, cancelSource } = action.payload
+            const { directoryPath, file, cancelSource } = action.payload
             return {
                 ...state,
                 uploadTaskList: [{
                     id: file.uid,
-                    uploadDirectoryPath: uploadDirectoryPath,
+                    uploadDirectoryPath: directoryPath,
                     filename: file.name,
                     fileSize: file.size,
                     file: file,
@@ -26,6 +26,13 @@ export default (state = initState, action) => {
             return {
                 ...state,
                 uploadTaskList: state.uploadTaskList.filter(item => item.id !== action.payload.id)
+            }
+        case actionTypes.RESTART_UPLOAD_TASK:
+            return {
+                ...state,
+                uploadTaskList: state.uploadTaskList.map(item => {
+                    return item.id === action.payload.id ? { ...item, status: 'UPLOADING', cancelSource: action.payload.cancelSource, progress: 0 } : item
+                })
             }
         case actionTypes.UPDATE_UPLOAD_TASK_UPLOAD_PROGRESS:
             return {

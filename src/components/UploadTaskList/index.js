@@ -12,6 +12,15 @@ const mapState = state => ({
 
 @connect(mapState, { removeUploadTask, cancelUploadTask, startUploadTask })
 class UploadTaskList extends Component {
+    onRestartUploadTask = (id) => {
+        const uploadTaskList = this.props.uploadTaskList.filter(item => item.id === id)
+        if (uploadTaskList.length === 0) {
+            return
+        }
+        const uploadTaskInfo = uploadTaskList[0]
+        this.props.startUploadTask(uploadTaskInfo.uploadDirectoryPath, uploadTaskInfo.file, true)
+    }
+
     render() {
         return (
             <List
@@ -28,7 +37,7 @@ class UploadTaskList extends Component {
                         )]
                     } else if (item.status === 'CANCELED') {
                         actions = [(
-                            <Button size="small" shape="circle" icon={<RedoOutlined />} onClick={() => { this.props.startUploadTask(item.id) }} />
+                            <Button size="small" shape="circle" icon={<RedoOutlined />} onClick={() => { this.onRestartUploadTask(item.id) }} />
                         ), (
                             <Button size="small" shape="circle" icon={<DeleteOutlined />} danger onClick={() => this.props.removeUploadTask(item.id)} />
                         )]

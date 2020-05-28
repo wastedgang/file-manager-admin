@@ -19,6 +19,10 @@ const startUploadTaskAction = (directoryPath, file, cancelSource) => {
     return { type: actionTypes.START_UPLOAD_TASK, payload: { directoryPath, file, cancelSource } }
 }
 
+const restartUploadTaskAction = (id, cancelSource) => {
+    return { type: actionTypes.RESTART_UPLOAD_TASK, payload: { id, cancelSource } }
+}
+
 const updateUploadProgressAction = (id, progress) => {
     return { type: actionTypes.UPDATE_UPLOAD_TASK_UPLOAD_PROGRESS, payload: { id, progress } }
 }
@@ -51,16 +55,14 @@ export const cancelUploadTask = (id) => {
     }
 }
 
-export const startUploadTask = (directoryPath, file) => {
+export const startUploadTask = (directoryPath, file, isRestart) => {
     return async (dispatch) => {
-        
-
         // 计算上传URL和file参数
         const uploadUrl = '/api/v1/my_space/file/upload' + directoryPath
         const formData = new FormData()
         formData.append('file', file)
         const cancelSource = axios.CancelToken.source()
-        const config = {cancelToken: cancelSource.token}
+        const config = { cancelToken: cancelSource.token }
 
         // 设置上传进度callback
         config.onUploadProgress = (progressEvent) => {
@@ -71,7 +73,11 @@ export const startUploadTask = (directoryPath, file) => {
 
         // 发送上传请求
         try {
-            dispatch(startUploadTaskAction(directoryPath, file, cancelSource))
+            if (isRestart) {
+                dispatch(restartUploadTaskAction(file.uid, cancelSource))
+            } else {
+                dispatch(startUploadTaskAction(directoryPath, file, cancelSource))
+            }
             const response = await axios.post(uploadUrl, formData, config)
             if (response.status === 200 && response.data.code === '000000') {
                 // 上传成功
