@@ -28,7 +28,7 @@ class UploadTaskList extends Component {
                         )]
                     } else if (item.status === 'CANCELED') {
                         actions = [(
-                            <Button size="small" shape="circle" icon={<RedoOutlined />} onClick={() => { this.props.restartUploadTask(item.id) }} />
+                            <Button size="small" shape="circle" icon={<RedoOutlined />} onClick={() => { this.props.startUploadTask(item.id) }} />
                         ), (
                             <Button size="small" shape="circle" icon={<DeleteOutlined />} danger onClick={() => this.props.removeUploadTask(item.id)} />
                         )]

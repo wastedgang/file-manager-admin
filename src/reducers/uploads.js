@@ -23,11 +23,9 @@ export default (state = initState, action) => {
                 }, ...state.uploadTaskList]
             }
         case actionTypes.REMOVE_UPLOAD_TASK:
-            const uploadTaskList = state.uploadTaskList.filter(item => item.id !== action.payload.id)
             return {
                 ...state,
-                uploadedCount: uploadTaskList.filter(item => item.status === 'UPLOADED').length,
-                uploadTaskList: uploadTaskList
+                uploadTaskList: state.uploadTaskList.filter(item => item.id !== action.payload.id)
             }
         case actionTypes.UPDATE_UPLOAD_TASK_UPLOAD_PROGRESS:
             return {
