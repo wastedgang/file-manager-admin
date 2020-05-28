@@ -1,6 +1,5 @@
 import { message } from 'antd'
 import axios from 'axios'
-import getFileContentHash from '@/md5'
 
 import actionTypes from './actionTypes'
 
@@ -174,18 +173,7 @@ export const startUploadTask = (id, contentHash) => {
 }
 
 export const addUploadTask = (uploadDirectoryPath, file) => {
-    return async (dispatch) => {
+    return dispatch => {
         dispatch(addUploadTaskAction(uploadDirectoryPath, file))
-        // 处理文件内容哈希值计算进程的变化
-        const onCalculateHashProgress = ({ total, current }) => {
-            updateCalculateProgress(file.uid, current / total * 100)
-        }
-
-        try {
-            const contentHash = await getFileContentHash({ file: file, onProgress: onCalculateHashProgress })
-            startUploadTask(file.uid, contentHash)
-        } catch (err) {
-            message.error(file.name + ' 上传失败')
-        }
     }
 }
