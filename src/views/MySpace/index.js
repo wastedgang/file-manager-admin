@@ -64,14 +64,18 @@ class MySpace extends Component {
             newState.shouldLoadFiles = true
             newState.currentUploadedCount = nextProps.uploadedCount
         }
+        if (sort !== prevState.sort) {
+            newState.shouldLoadFiles = true
+            newState.sort = sort
+        }
         if (path !== prevState.currentPath) {
             newState.shouldLoadFiles = true
             newState.currentPath = path
             newState.selectedRowKeys = []
-        }
-        if (sort !== prevState.sort) {
-            newState.shouldLoadFiles = true
-            newState.sort = sort
+        } else {
+            if(nextProps.isFilesLoading || newState.shouldLoadFiles) {
+                newState.shouldLoadFiles = false
+            }
         }
         return newState
     }
