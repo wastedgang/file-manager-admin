@@ -72,10 +72,6 @@ class MySpace extends Component {
             newState.shouldLoadFiles = true
             newState.currentPath = path
             newState.selectedRowKeys = []
-        } else {
-            if(nextProps.isFilesLoading || newState.shouldLoadFiles) {
-                newState.shouldLoadFiles = false
-            }
         }
         return newState
     }
@@ -93,7 +89,7 @@ class MySpace extends Component {
 
     // 刷新文件列表
     refreshFileList = () => {
-        if (!this.state.shouldLoadFiles) {
+        if (!this.state.shouldLoadFiles || this.props.isFilesLoading) {
             return;
         }
         this.setState({ shouldLoadFiles: false })
