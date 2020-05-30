@@ -2,11 +2,11 @@ import React, { Component, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Divider, Popover, Modal, Upload, TreeSelect, message, Badge } from 'antd'
 import { UnorderedListOutlined, UploadOutlined } from '@ant-design/icons'
-import { UploadTaskList } from '@/components'
 import { startUploadTask } from '@/actions/uploads'
 import axios from 'axios'
 
 import './upload-control.less'
+import UploadTaskList from './UploadTaskList'
 
 const mapState = state => ({
     uploadingCount: state.uploads.uploadingCount

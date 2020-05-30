@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { Layout, Divider, Space } from 'antd'
+import { Layout, Divider } from 'antd'
 import { UploadControl, UserControl } from '@/components'
 
 import './header.less'

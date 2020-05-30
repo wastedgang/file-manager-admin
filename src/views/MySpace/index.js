@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input, Spin, Upload } from 'antd'
+import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input, Spin } from 'antd'
 import {
     DeleteOutlined,
-    UploadOutlined,
     DownloadOutlined,
     FileFilled,
     FolderFilled,
