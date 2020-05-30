@@ -15,7 +15,8 @@ import {
     CopyOutlined,
     FormOutlined,
     ScissorOutlined,
-    FolderAddOutlined
+    FolderAddOutlined,
+    ReloadOutlined
 }
     from '@ant-design/icons'
 
@@ -32,7 +33,6 @@ import './my-space.less'
 const mapState = state => ({
     isFilesLoading: state.files.isLoading,
     files: state.files.files,
-    uploadedCount: state.uploads.uploadedCount,
 })
 @connect(mapState, { refreshFileList })
 @withRouter
@@ -45,23 +45,17 @@ class MySpace extends Component {
         selectedRowKeys: [],
 
         isAddFolderModalVisible: false,
-
-        currentUploadedCount: 0,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
         let { path, sort } = queryString.parse(nextProps.location.search)
         path = path ? path : '/'
         sort = sort ? sort : null
-        if (nextProps.uploadedCount === prevState && path === prevState.currentPath && sort === prevState.sort) {
+        if (path === prevState.currentPath && sort === prevState.sort) {
             return null
         }
 
         const newState = {}
-        if (nextProps.uploadedCount !== prevState.currentUploadedCount) {
-            newState.shouldLoadFiles = true
-            newState.currentUploadedCount = nextProps.uploadedCount
-        }
         if (sort !== prevState.sort) {
             newState.shouldLoadFiles = true
             newState.sort = sort
@@ -220,6 +214,7 @@ class MySpace extends Component {
                             <Button icon={<MoreOutlined />}>批量操作</Button>
                         </Dropdown>
                         <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
+                        <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true })}>刷新</Button>
                     </Space>
                 )}
             >

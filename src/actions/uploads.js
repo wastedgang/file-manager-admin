@@ -7,6 +7,10 @@ const removeUploadTaskAction = (id) => {
     return { type: actionTypes.REMOVE_UPLOAD_TASK, payload: { id } }
 }
 
+const removeUploadedTasksAction = () => {
+    return { type: actionTypes.REMOVE_UPLOADED_TASKS }
+}
+
 const finishUploadTaskAction = (id) => {
     return { type: actionTypes.FINISH_UPLOAD_TASK, payload: { id } }
 }
@@ -52,6 +56,12 @@ export const cancelUploadTask = (id) => {
             uploadTaskInfo.cancelSource.cancel()
         }
         dispatch(cancelUploadTaskAction(id))
+    }
+}
+
+export const removeUploadedTasks = () => {
+    return dispatch => {
+        dispatch(removeUploadedTasksAction())
     }
 }
 

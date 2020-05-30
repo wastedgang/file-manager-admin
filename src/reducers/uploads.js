@@ -33,6 +33,13 @@ export default (state = initState, action) => {
                 uploadingCount: uploadTaskList.filter(item => item.status !== 'UPLOADED').length,
                 uploadTaskList: uploadTaskList
             }
+        case actionTypes.REMOVE_UPLOADED_TASKS:
+            uploadTaskList = state.uploadTaskList.filter(item => item.status !== 'UPLOADED')
+            return {
+                ...state,
+                uploadingCount: uploadTaskList.length,
+                uploadTaskList: uploadTaskList
+            }
         case actionTypes.RESTART_UPLOAD_TASK:
             uploadTaskList = state.uploadTaskList.map(item => {
                 if (item.id !== action.payload.id) {

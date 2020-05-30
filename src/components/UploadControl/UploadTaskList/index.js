@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { List, Progress, Button, Tooltip } from 'antd'
-import { DeleteOutlined, RedoOutlined, PauseOutlined } from '@ant-design/icons'
+import { DeleteOutlined, RedoOutlined, PauseOutlined, ClearOutlined } from '@ant-design/icons'
 import { connect } from 'react-redux'
-import { removeUploadTask, cancelUploadTask, startUploadTask } from '@/actions/uploads'
+import { removeUploadTask, cancelUploadTask, startUploadTask, removeUploadedTasks } from '@/actions/uploads'
 
 import './upload.less'
 
@@ -10,7 +10,7 @@ const mapState = state => ({
     uploadTaskList: state.uploads.uploadTaskList
 })
 
-@connect(mapState, { removeUploadTask, cancelUploadTask, startUploadTask })
+@connect(mapState, { removeUploadTask, cancelUploadTask, startUploadTask, removeUploadedTasks })
 class UploadTaskList extends Component {
     onRestartUploadTask = (id) => {
         const uploadTaskList = this.props.uploadTaskList.filter(item => item.id === id)
@@ -22,10 +22,17 @@ class UploadTaskList extends Component {
     }
 
     render() {
+        const listHeader = (
+            <div className="upload-task-list-header">
+                    {/* <Button icon={<PauseOutlined />}>暂停所有任务</Button> */}
+                    <Button icon={<ClearOutlined />} style={{marginLeft: 12}} onClick={this.props.removeUploadedTasks}>清除已完成</Button>
+            </div>
+        )
         return (
             <List
                 itemLayout="horizontal"
                 className="upload-task-list"
+                header={listHeader}
                 dataSource={this.props.uploadTaskList}
                 pagination={{ pageSize: 10, showSizeChanger: false, size: 'small' }}
                 renderItem={item => {
