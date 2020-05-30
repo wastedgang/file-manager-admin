@@ -100,7 +100,7 @@ class UploadControl extends Component {
 
                 <div>
                     <Popover content={<UploadTaskList />} placement="bottomRight" trigger="click">
-                        <Badge count={this.props.uploadingCount} offset={[13, 0]}>
+                        <Badge count={this.props.uploadingCount} offset={[15, 0]} style={{zIndex: 1}}>
                             <UnorderedListOutlined /><span>&nbsp;&nbsp;上传记录</span>
                         </Badge>
                     </Popover>
