@@ -6,7 +6,7 @@ import './content-card.less'
 export default class ContentCard extends Component {
     render() {
         let title = this.props.title
-        if(this.props.description) {
+        if (this.props.description) {
             title = (
                 <div className="table-header">
                     <div className="table-title">{this.props.title}</div>
@@ -15,13 +15,21 @@ export default class ContentCard extends Component {
             )
         }
         return (
+            // <div style={{position: 'relative', height: '100%'}}>
             <Card
                 {...this.props}
                 title={title}
                 bordered={false}
+                className="content-card"
+                // style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+                // bodyStyle={{ flex: 1, position: 'relative' }}
             >
-                {this.props.children}
+                <div className="content-wrapper">
+                    {this.props.children}
+                </div>
+
             </Card>
+            // </div>
         )
     }
 

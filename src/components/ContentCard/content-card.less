@@ -5,9 +5,44 @@
         color: #333333;
         margin-bottom: 10px;
     }
+
     .table-desc {
         font-size: 12px;
         font-weight: 400;
         color: #888888;
+    }
+}
+
+.content-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .ant-card-body {
+        flex: 1;
+        position: relative;
+
+        >.content-wrapper {
+            position: absolute;
+            top: 12px;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            overflow: auto;
+        }
+
+        ::-webkit-scrollbar {
+            width: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 2.5px;
+            background: rgba(159, 159, 159, 0.5);
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(225, 225, 225, 0.2);
+            border-radius: 2.5px;
+        }
     }
 }

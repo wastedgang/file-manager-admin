@@ -21,7 +21,6 @@ import {
     from '@ant-design/icons'
 
 import { ContentCard, MessageBox, ModalForm } from '@/components'
-import { startUploadTask } from '@/actions/uploads'
 import { refreshFileList } from '@/actions/files'
 
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
@@ -36,7 +35,7 @@ const mapState = state => ({
     files: state.files.files,
     uploadedCount: state.uploads.uploadedCount,
 })
-@connect(mapState, { startUploadTask, refreshFileList })
+@connect(mapState, { refreshFileList })
 @withRouter
 class MySpace extends Component {
     state = {
@@ -149,11 +148,6 @@ class MySpace extends Component {
         }
     }
 
-    handleBeforeUpload = (file) => {
-        this.props.startUploadTask(this.state.currentPath, file)
-        return false
-    }
-
     // 打开文件项
     handleOpenFile = (fileInfo) => {
         const path = (!this.state.currentPath || this.state.currentPath === '/' ? '' : this.state.currentPath) + '/' + fileInfo.filename
@@ -227,14 +221,6 @@ class MySpace extends Component {
                             <Button icon={<MoreOutlined />}>批量操作</Button>
                         </Dropdown>
                         <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
-                        <Upload
-                            multiple={true}
-                            showUploadList={false}
-                            withCredentials={true}
-                            beforeUpload={this.handleBeforeUpload}
-                        >
-                            <Button icon={<UploadOutlined />}>上传</Button>
-                        </Upload>
                     </Space>
                 )}
             >
@@ -360,7 +346,7 @@ class MySpace extends Component {
                             { pattern: /^[^/:]+$/, message: '请输入正确的文件名' }
                         ]}
                     >
-                        <Input placeholder="文件名" ref={input => { input && input.focus() }} />
+                        <Input placeholder="文件名" autoFocus={true} />
                     </Form.Item>
                 </ModalForm>
             </ContentCard>

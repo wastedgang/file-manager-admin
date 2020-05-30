@@ -26,6 +26,11 @@ export default (state = initState, action) => {
                 isLogin: true,
                 isLoading: false,
             }
+        case actionTypes.SET_CURRENT_USERINFO:
+            return {
+                ...state,
+                userInfo: action.payload.userInfo,
+            }
         case actionTypes.LOGIN_FAILED:
             return {
                 userInfo: null,

@@ -6,7 +6,7 @@ import { ConfigProvider } from 'antd'
 import zhCN from 'antd/es/locale/zh_CN';
 
 import store from '@/store'
-import '@/requests'
+import '@/config/axios'
 
 import './index.less'
 import App from './App'

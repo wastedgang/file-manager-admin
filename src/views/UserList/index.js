@@ -1,17 +1,22 @@
 import React, { Component } from 'react'
-
-import { UserAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import axios from 'axios'
+import { connect } from 'react-redux'
 import { Button, Table, Space, Input, Form, message } from 'antd'
+import { UserAddOutlined, EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons'
 
 import { ContentCard, ModalForm, MessageBox } from '@/components'
+import { refreshCurrentUserinfo } from '@/actions/user'
 
-import axios from 'axios'
-
-export default class UserList extends Component {
+const mapState = state => ({
+    ...state.user
+})
+@connect(mapState, { refreshCurrentUserinfo })
+class UserList extends Component {
     state = {
         isAddUserModalVisible: false,
 
         isUpdateUserModalVisible: false,
+        isUpdatePasswordModalVisible: false,
         selectedUser: {},
         selectedUserIndex: null,
         users: [],
@@ -33,7 +38,7 @@ export default class UserList extends Component {
     }
 
     // 编辑用户信息
-    handleUpdateUser = async ({ nickname, remark }) => {
+    handleUpdateUserInfo = async ({ nickname, remark }) => {
         // 更新用户信息
         try {
             const requestData = { nickname: nickname, remark: remark }
@@ -42,6 +47,25 @@ export default class UserList extends Component {
                 this.refreshUserList()
                 message.success('修改成功')
                 this.setState({ isUpdateUserModalVisible: false })
+                if (this.state.selectedUser.username === this.props.userInfo.username) {
+                    this.props.refreshCurrentUserinfo()
+                }
+                return
+            }
+        } catch (err) {
+            message.error('修改失败')
+        }
+    }
+
+    // 修改用户密码
+    handleUpdateUserPassword = async ({ password }) => {
+        try {
+            const requestData = { password: password }
+            const response = await axios.patch('/api/v1/user/' + this.state.selectedUser.username + '/password', requestData)
+            if (response.data.code === '000000') {
+                this.refreshUserList()
+                message.success('修改成功')
+                this.setState({ isUpdatePasswordModalVisible: false })
                 return
             }
         } catch (err) {
@@ -129,6 +153,15 @@ export default class UserList extends Component {
                                 >
                                     <EditOutlined />编辑
                                 </Button>
+                                <Button
+                                    size="small"
+                                    type="primary"
+                                    onClick={
+                                        () => this.setState({ isUpdatePasswordModalVisible: true, selectedUser: record, selectedUserIndex: index })
+                                    }
+                                >
+                                    <LockOutlined />修改密码
+                                </Button>
                                 <Button size="small" danger onClick={() => this.handleDeleteUser(record, index)}><DeleteOutlined />删除</Button>
                             </Space>
                         )}
@@ -148,10 +181,10 @@ export default class UserList extends Component {
                         label="用户名"
                         rules={[
                             { required: true, message: '请输入用户名' },
-                            { pattern: /^[0-9A-Za-z_]{6,32}$/, message: '用户名必须由数字、英文字母和下划线组成，且长度为6~32个字符' },
+                            { pattern: /^[0-9A-Za-z_]{5,32}$/, message: '用户名必须由数字、英文字母和下划线组成，且长度为6~32个字符' },
                         ]}
                     >
-                        <Input placeholder="用户名" ref={input => { input && input.focus() }} />
+                        <Input placeholder="用户名" autoFocus={true} />
                     </Form.Item>
                     <Form.Item
                         name="remark"
@@ -166,7 +199,7 @@ export default class UserList extends Component {
                     title="编辑用户信息"
                     visible={this.state.isUpdateUserModalVisible}
                     onCancel={() => this.setState({ isUpdateUserModalVisible: false })}
-                    onFinish={this.handleUpdateUser}
+                    onFinish={this.handleUpdateUserInfo}
                     initialValues={this.state.selectedUser}
                 >
                     <Form.Item
@@ -180,7 +213,7 @@ export default class UserList extends Component {
                         label="昵称"
                         rules={[{ required: true, message: '请输入昵称' }]}
                     >
-                        <Input placeholder="昵称" ref={input => { input && input.focus() }} />
+                        <Input placeholder="昵称" autoFocus={true} />
                     </Form.Item>
                     <Form.Item
                         name="remark"
@@ -189,7 +222,47 @@ export default class UserList extends Component {
                         <Input.TextArea placeholder="备注" />
                     </Form.Item>
                 </ModalForm>
+
+                {/* {修改用户密码对话框} */}
+                <ModalForm
+                    title="修改用户密码"
+                    visible={this.state.isUpdatePasswordModalVisible}
+                    onCancel={() => this.setState({ isUpdatePasswordModalVisible: false })}
+                    onFinish={this.handleUpdateUserPassword}
+                    initialValues={this.state.selectedUser}
+                >
+                    <Form.Item
+                        name="username"
+                        label="用户名"
+                    >
+                        <Input placeholder="用户名" disabled={true} />
+                    </Form.Item>
+                    <Form.Item
+                        name="password"
+                        label="新密码"
+                        rules={[{ required: true, message: '请输入新密码' }, { min: 6, message: '密码长度不少于6个字符' }]}
+                    >
+                        <Input.Password placeholder="新密码" autoFocus={true} />
+                    </Form.Item>
+                    <Form.Item
+                        name="confirmPassword"
+                        label="确认密码"
+                        rules={[{ required: true, message: '请输入确认密码' }, ({ getFieldValue }) => ({
+                            validator(rule, value) {
+                                if (!value || getFieldValue('password') === value) {
+                                    return Promise.resolve()
+                                }
+
+                                return Promise.reject('两次密码不一致')
+                            },
+                        })]}
+                    >
+                        <Input.Password placeholder="确认密码" />
+                    </Form.Item>
+                </ModalForm>
             </ContentCard>
         )
     }
 }
+
+export default UserList

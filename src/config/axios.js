@@ -51,21 +51,3 @@ const responseInterceptor = (response) => {
     return response
 }
 axios.interceptors.response.use(responseInterceptor)
-
-// 登录接口
-export const login = (loginInfo) => {
-    return axios.post('/api/v1/auth/login', loginInfo)
-}
-
-// 退出登录接口
-export const logout = () => {
-    return axios.post('/api/v1/auth/logout')
-}
-
-// 获取上传开始位置接口
-export const getUploadStartPoint = (contentHash, fileSize) => {
-    const requestParams = {content_hash: contentHash, file_size: fileSize}
-    return axios.get('/api/v1/my_space/file/upload/start_point', {params: requestParams})
-}
-
-// 上传接口

@@ -27,7 +27,7 @@ class UploadTaskList extends Component {
                 itemLayout="horizontal"
                 className="upload-task-list"
                 dataSource={this.props.uploadTaskList}
-                pagination={{ pageSize: 11 }}
+                pagination={{ pageSize: 10, showSizeChanger: false, size: 'small' }}
                 renderItem={item => {
                     let actions = null
                     if (item.status === 'UPLOADING') {

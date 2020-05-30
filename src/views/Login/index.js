@@ -39,7 +39,7 @@ class Login extends Component {
                                 style={{ marginTop: 12 }}
                                 rules={[{ required: true, message: '请输入用户名' }]}
                             >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名" ref={input => { input && input.focus() }} />
+                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名" autoFocus={true}/>
                             </Form.Item>
                             <Form.Item
                                 name="password"
