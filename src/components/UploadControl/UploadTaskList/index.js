@@ -74,8 +74,8 @@ class UploadTaskList extends Component {
                                 title={(
                                     <Tooltip placement="left" title={item.filename}>
                                         <div
-                                            style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                                            {item.filename.length > 30 ? item.filename.substr(0, 30) + '...' : item.filename}
+                                            style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: 244}}>
+                                            {item.filename}
                                         </div>
                                     </Tooltip>
                                 )}
