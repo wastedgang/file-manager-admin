@@ -24,8 +24,12 @@ class UploadTaskList extends Component {
     render() {
         const listHeader = (
             <div className="upload-task-list-header">
-                    {/* <Button icon={<PauseOutlined />}>暂停所有任务</Button> */}
-                    <Button icon={<ClearOutlined />} style={{marginLeft: 12}} onClick={this.props.removeUploadedTasks}>清除已完成</Button>
+                {/* <Button icon={<PauseOutlined />}>暂停所有任务</Button> */}
+                <Button 
+                    icon={<ClearOutlined />} 
+                    style={{ marginLeft: 12 }} 
+                    onClick={this.props.removeUploadedTasks}
+                    disabled={this.props.uploadTaskList.filter(item => item.status === 'UPLOADED').length === 0}>清除已完成</Button>
             </div>
         )
         return (
@@ -69,7 +73,10 @@ class UploadTaskList extends Component {
                             <List.Item.Meta
                                 title={(
                                     <Tooltip placement="left" title={item.filename}>
-                                        {item.filename.length > 30 ? item.filename.substr(0, 30) + '...' : item.filename}
+                                        <div
+                                            style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                            {item.filename.length > 30 ? item.filename.substr(0, 30) + '...' : item.filename}
+                                        </div>
                                     </Tooltip>
                                 )}
                                 description={progressBar}
