@@ -1,3 +1,14 @@
+.ant-table-cell-common() {
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    -webkit-transition: background .3s ease;
+    transition: background .3s ease;
+
+    padding: 4px;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+}
+
 .ant-table .table {
     width: 100%;
     text-align: left;
@@ -7,34 +18,109 @@
 
     >.ant-table-thead {
         display: flex;
+        align-items: center;
 
-        .ant-table-cell {
+        >.ant-table-cell {
             background-color: #fafafa;
             color: rgba(0, 0, 0, .85);
             font-weight: 500;
-            text-align: left;
             background: #fafafa;
-            border-bottom: 1px solid #f0f0f0;
-            -webkit-transition: background .3s ease;
-            transition: background .3s ease;
 
-            padding: 4px;
-            overflow-wrap: break-word;
+            .ant-table-cell-common
+        }
+
+        >.ant-table-cell.ant-table-selection-column {
+            text-align: center;
+            .ant-checkbox-wrapper {
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                color: rgba(0, 0, 0, .65);
+                font-size: 12px;
+                font-variant: tabular-nums;
+                line-height: 1.66667;
+                list-style: none;
+                -webkit-font-feature-settings: tnum, "tnum";
+                font-feature-settings: tnum, "tnum";
+                display: inline-block;
+                line-height: unset;
+                cursor: pointer;
+
+                .ant-checkbox {
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                    margin: 0;
+                    padding: 0;
+                    color: rgba(0, 0, 0, .65);
+                    font-size: 12px;
+                    font-variant: tabular-nums;
+                    line-height: 1.66667;
+                    list-style: none;
+                    -webkit-font-feature-settings: tnum, "tnum";
+                    font-feature-settings: tnum, "tnum";
+                    position: relative;
+                    top: -.09em;
+                    display: inline-block;
+                    line-height: 1;
+                    white-space: nowrap;
+                    vertical-align: middle;
+                    outline: none;
+                    cursor: pointer;
+
+                    input.ant-checkbox-input {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        left: 0;
+                        z-index: 1;
+                        width: 100%;
+                        height: 100%;
+                        cursor: pointer;
+                        opacity: 0;
+                    }
+
+                    .ant-checkbox-inner {
+                        position: relative;
+                        top: 0;
+                        left: 0;
+                        display: block;
+                        width: 14px;
+                        height: 14px;
+                        direction: ltr;
+                        background-color: #fff;
+                        border: 1px solid #d9d9d9;
+                        border-radius: 2px;
+                        border-collapse: separate;
+                        -webkit-transition: all .3s;
+                        transition: all .3s;
+                    }
+                }
+            }
+
+
         }
     }
 
-    >.ant-table-tbody div >.table-row {
+    >.ant-table-tbody div>.table-row {
         display: flex;
         align-items: center;
 
         .ant-table-cell {
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-            -webkit-transition: background .3s ease;
-            transition: background .3s ease;
-
-            padding: 4px;
-            overflow-wrap: break-word;
+            height: 100%;
+            display: table-cell;
+            vertical-align: middle;
+            line-height: 100%;
+            .ant-table-cell-common
         }
+
+        .ant-table-cell.ant-table-selection-column {
+            text-align: center;
+        }
+    }
+
+    >.ant-table-tbody div>.table-row:hover {
+        background-color: #fafafa;
     }
 }

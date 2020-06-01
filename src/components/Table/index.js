@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component, Fragment, createRef } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import propTypes from 'prop-types'
 
@@ -6,30 +6,34 @@ import './table.less'
 import Column from './Column'
 
 export default class Table extends Component {
+    headerRef = createRef()
+
     render() {
         const columns = this.props.children.filter(item => item.type === Column)
 
         const Row = ({ index, style }) => {
             const rowData = this.props.dataSource[index]
             return (
-                <div className="table-row" key={rowData[this.props.rowKey]} style={style}>
+                <div className="table-row" key={rowData[this.props.rowKey]} style={style} ref={this.headerRef}>
                     {
                         <Fragment>
                             {!this.props.rowSelection ? null : (
                                 <div className="ant-table-cell ant-table-selection-column">
-                                    <input type="checkbox"/>
+                                    <input type="checkbox" />
                                 </div>
                             )}
                             {
                                 columns.map((column, columnIndex) => {
                                     const columnProps = column.props
                                     const style = {
-                                        flex: columnProps.flex,
                                         ...columnProps.style,
                                         textAlign: columnProps.align
                                     }
                                     if (columnProps.width)
                                         style.width = columnProps.width
+                                    else if (columnProps.flex) {
+                                        style.flex = columnProps.flex
+                                    }
 
                                     let key = columnIndex
                                     if (columnProps.dataIndex && rowData[columnProps.dataIndex]) {
@@ -60,16 +64,30 @@ export default class Table extends Component {
                         <div className="table">
                             <div className="ant-table-thead">
                                 {!this.props.rowSelection ? null : (
-                                    <div className="ant-table-cell ant-table-selection-column"></div>
+                                    <div className="ant-table-cell ant-table-selection-column">
+                                        <div className="ant-table-selection">
+                                            <label className="ant-checkbox-wrapper">
+                                                <span className="ant-checkbox">
+                                                    <input type="checkbox" className="ant-checkbox-input" value />
+                                                    <span className="ant-checkbox-inner"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 )}
                                 {
                                     columns.map((column, index) => {
                                         const columnProps = column.props
                                         const style = {
-                                            flex: columnProps.flex,
                                             ...columnProps.style,
                                             textAlign: columnProps.align
                                         }
+                                        if (columnProps.width)
+                                            style.width = columnProps.width
+                                        else if (columnProps.flex) {
+                                            style.flex = columnProps.flex
+                                        }
+
                                         return (
                                             <div key={index} className="ant-table-cell" style={style}>
                                                 {columnProps.title}
@@ -83,7 +101,7 @@ export default class Table extends Component {
                                 height={610}
                                 itemCount={this.props.dataSource.length}
                                 itemSize={35}
-                                width={850}
+                                width={this.headerRef.width}
                             >
                                 {Row}
                             </List>

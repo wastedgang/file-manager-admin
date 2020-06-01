@@ -251,6 +251,7 @@ class MySpace extends Component {
                 >
                     <Table.Column
                         title="类型"
+                        width={42}
                         dataIndex="mimeType"
                         render={(text, record, index) => {
                             if (record.type === 'DIRECTORY') {
@@ -259,7 +260,7 @@ class MySpace extends Component {
                             return <FileFilled style={iconStyle} />
                         }}
                     />
-                    <Table.Column title="文件名" dataIndex="filename" />
+                    <Table.Column title="文件名" width={520} dataIndex="filename" />
                     <Table.Column title="文件大小" dataIndex="fileSize" render={(text, record) =>
                         filesize(record.fileSize)
                     } />
