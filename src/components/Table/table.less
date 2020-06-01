@@ -4,4 +4,37 @@
     border-radius: 2px 2px 0 0;
     border-collapse: separate;
     border-spacing: 0;
+
+    >.ant-table-thead {
+        display: flex;
+
+        .ant-table-cell {
+            background-color: #fafafa;
+            color: rgba(0, 0, 0, .85);
+            font-weight: 500;
+            text-align: left;
+            background: #fafafa;
+            border-bottom: 1px solid #f0f0f0;
+            -webkit-transition: background .3s ease;
+            transition: background .3s ease;
+
+            padding: 4px;
+            overflow-wrap: break-word;
+        }
+    }
+
+    >.ant-table-tbody div >.table-row {
+        display: flex;
+        align-items: center;
+
+        .ant-table-cell {
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            -webkit-transition: background .3s ease;
+            transition: background .3s ease;
+
+            padding: 4px;
+            overflow-wrap: break-word;
+        }
+    }
 }

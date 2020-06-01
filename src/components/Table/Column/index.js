@@ -13,6 +13,8 @@ export default class TableColumn extends Component {
     static defaultProps = {
         title: "",
         align: "center",
+        style: {},
+        flex: 1,
     }
 
     static propTypes = {
@@ -20,5 +22,9 @@ export default class TableColumn extends Component {
         dataIndex: propTypes.string,
         key: propTypes.string,
         align: propTypes.oneOf(["center", "left", "right"]),
+        style: propTypes.object,
+        flex: propTypes.number,
+        render: propTypes.func,
+        width: propTypes.number,
     }
 }
