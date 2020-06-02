@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { Button, Table, Space, Tooltip, Dropdown, Menu, message, Form, Input } from 'antd'
+import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input } from 'antd'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -19,7 +19,7 @@ import {
     ReloadOutlined
 } from '@ant-design/icons'
 
-import { ContentCard, MessageBox, ModalForm } from '@/components'
+import { MessageBox, ModalForm, Table, TableCard } from '@/components'
 import { refreshFileList } from '@/actions/files'
 
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
@@ -83,11 +83,6 @@ class MySpace extends Component {
 
     // 刷新文件列表
     refreshFileList = async () => {
-        // console.log('refreshFileList1')
-        // if (!this.state.shouldLoadFiles || this.props.isFilesLoading) {
-        //     return
-        // }
-        // console.log('refreshFileList2')
         if (!this.state.shouldLoadFiles || this.state.isFilesLoading) {
             return
         }
@@ -95,9 +90,7 @@ class MySpace extends Component {
         let { path, sort } = queryString.parse(this.props.location.search)
         path = path ? path : '/'
         sort = sort ? sort : null
-        // this.props.refreshFileList({ path, sort })
 
-        const now = new Date()
         const requestParams = { directory_path: path }
         if (sort) {
             requestParams.sort = sort
@@ -110,7 +103,6 @@ class MySpace extends Component {
         } catch (err) {
             message.error('获取存储空间列表失败')
         }
-        console.log('refreshFileList', new Date() - now)
     }
 
     // TODO: 批量删除文件
@@ -229,32 +221,29 @@ class MySpace extends Component {
             </Menu>
         )
         return (
-            <ContentCard
-                title="我的空间"
-                description={breadcrumb}
-                extra={(
-                    <Space>
-                        <Dropdown overlay={batchActionMenu} disabled={this.state.selectedRowKeys.length === 0}>
-                            <Button icon={<MoreOutlined />}>批量操作</Button>
-                        </Dropdown>
-                        <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
-                        <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true })}>刷新</Button>
-                    </Space>
-                )}
-            >
-                <Table
+            <>
+                <TableCard
+                    title="我的空间"
+                    description={breadcrumb}
+                    extra={(
+                        <Space>
+                            <Dropdown overlay={batchActionMenu} disabled={this.state.selectedRowKeys.length === 0}>
+                                <Button icon={<MoreOutlined />}>批量操作</Button>
+                            </Dropdown>
+                            <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
+                            <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true })}>刷新</Button>
+                        </Space>
+                    )}
+
                     dataSource={this.state.files}
                     rowSelection={rowSelection}
-                    pagination={false}
+                    selectedRowKeys={this.state.selectedRowKeys}
                     rowKey="filename"
-                    key="filename"
-                    loading={this.state.isFilesLoading}
-                    size="small"
                 >
                     <Table.Column
                         title="类型"
-                        key="mimeType"
-                        align="center"
+                        width={70}
+                        dataIndex="mimeType"
                         render={(text, record, index) => {
                             if (record.type === 'DIRECTORY') {
                                 return <FolderFilled style={iconStyle} />
@@ -262,19 +251,14 @@ class MySpace extends Component {
                             return <FileFilled style={iconStyle} />
                         }}
                     />
-                    <Table.Column title="文件名" dataIndex="filename" align="center"/>
-                    <Table.Column title="文件大小" dataIndex="fileSize" key="fileSize" align="center" showSorterTooltip={false} sorter={(a, b) => {
-                        return a.fileSize - b.fileSize
-                    }} render={(text, record) => filesize(record.fileSize)} />
-                    <Table.Column title="最近修改时间" dataIndex="updateTime" key="updateTime" align="center" showSorterTooltip={false} sorter={(a, b) => {
-                        if (a.updateTime === b.updateTime) return 0
-                        if (a.updateTime < b.updateTime) return -1
-                        else return 1
-                    }} />
+                    <Table.Column title="文件名" dataIndex="filename" />
+                    <Table.Column title="文件大小" dataIndex="fileSize" width={150} render={(text, record) =>
+                        filesize(record.fileSize)
+                    } />
+                    <Table.Column title="最近修改时间" dataIndex="updateTime" width={270} />
                     <Table.Column
                         title="操作"
-                        align="center"
-                        width={370}
+                        width={280}
                         className="table-operation"
                         render={(text, record, index) => {
                             const moreActionMenu = (
@@ -332,8 +316,7 @@ class MySpace extends Component {
                             )
                         }}
                     />
-                </Table>
-
+                </TableCard>
                 {/* 新建文件夹对话框 */}
                 <ModalForm
                     title="新建文件夹"
@@ -355,7 +338,7 @@ class MySpace extends Component {
                         <Input placeholder="文件名" autoFocus={true} />
                     </Form.Item>
                 </ModalForm>
-            </ContentCard>
+            </>
         )
     }
 }

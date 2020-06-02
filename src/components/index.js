@@ -1,5 +1,6 @@
 export { default as AdminLayout } from './AdminLayout'
 export { default as ContentCard } from './ContentCard'
+export { default as TableCard } from './TableCard'
 export { default as ModalForm } from './ModalForm'
 export { default as MessageBox } from './MessageBox'
 export { default as UploadControl } from './UploadControl'

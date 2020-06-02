@@ -2,7 +2,6 @@ import { AdminLayout } from '@/components'
 import {
     NotFound,
     MySpace,
-    MySpace2,
     Login,
     UserList,
     DatabaseSetting,
@@ -26,14 +25,6 @@ const routes = [{
     children: [{
         path: '/admin/my-space',
         component: MySpace,
-        title: '我的空间',
-        menu: {
-            icon: HomeOutlined,
-            roles: ['SYSTEM_ADMIN', 'NORMAL'],
-        },
-    }, {
-        path: '/admin/my-space2',
-        component: MySpace2,
         title: '我的空间',
         menu: {
             icon: HomeOutlined,

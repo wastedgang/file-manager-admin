@@ -1,6 +1,5 @@
 export { default as NotFound } from './NotFound'
 export { default as MySpace } from './MySpace'
-export { default as MySpace2 } from './MySpace2'
 export { default as Login } from './Login'
 export { default as UserList } from './UserList'
 export { default as DatabaseSetting } from './DatabaseSetting'

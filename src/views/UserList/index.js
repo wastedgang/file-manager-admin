@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import { connect } from 'react-redux'
-import { Button, Table, Space, Input, Form, message } from 'antd'
+import { Button, Space, Input, Form, message } from 'antd'
 import { UserAddOutlined, EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons'
 
-import { ContentCard, ModalForm, MessageBox } from '@/components'
+import { ModalForm, MessageBox, TableCard, Table } from '@/components'
 import { refreshCurrentUserinfo } from '@/actions/user'
 
 const mapState = state => ({
@@ -112,21 +112,22 @@ class UserList extends Component {
 
     render() {
         return (
-            <ContentCard
-                title="用户列表"
-                description="可查看添加、编辑、删除用户信息"
-                extra={<Button icon={<UserAddOutlined />} onClick={() => this.setState({ isAddUserModalVisible: true })}>添加用户</Button>}
-            >
-                <Table dataSource={this.state.users} pagination={false} rowKey='username' size="small">
-                    <Table.Column title="用户名" dataIndex="username" key="username" align="center" />
-                    <Table.Column title="昵称" dataIndex="nickname" key="nickname" align="center" />
+            <>
+                <TableCard
+                    title="用户列表"
+                    description="可查看添加、编辑、删除用户信息"
+                    extra={<Button icon={<UserAddOutlined />} onClick={() => this.setState({ isAddUserModalVisible: true })}>添加用户</Button>}
+
+                    dataSource={this.state.users}
+                    pagination={false}
+                    rowKey='username'
+                >
+                    <Table.Column title="用户名" dataIndex="username" />
+                    <Table.Column title="昵称" dataIndex="nickname" />
                     <Table.Column
                         title="用户类型"
-                        dataIndex="type"
-                        key="type"
-                        align="center"
                         render={(text, record, index) => {
-                            switch (text) {
+                            switch (record.type) {
                                 case 'SYSTEM_ADMIN':
                                     return '管理员'
                                 case 'NORMAL':
@@ -136,12 +137,10 @@ class UserList extends Component {
                             }
                         }}
                     />
-                    <Table.Column title="备注" dataIndex="remark" key="remark" align="center" />
-                    <Table.Column title="创建时间" dataIndex="createTime" key="createTime" align="center" />
+                    <Table.Column title="备注" dataIndex="remark" />
+                    <Table.Column title="创建时间" dataIndex="createTime" />
                     <Table.Column
                         title="操作"
-                        key="action"
-                        align="center"
                         render={(text, record, index) => (
                             <Space size="middle">
                                 <Button
@@ -166,7 +165,8 @@ class UserList extends Component {
                             </Space>
                         )}
                     />
-                </Table>
+
+                </TableCard>
 
                 {/* {添加用户对话框} */}
                 <ModalForm
@@ -260,7 +260,7 @@ class UserList extends Component {
                         <Input.Password placeholder="确认密码" />
                     </Form.Item>
                 </ModalForm>
-            </ContentCard>
+            </>
         )
     }
 }
