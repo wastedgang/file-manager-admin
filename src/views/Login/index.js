@@ -1,11 +1,8 @@
 import React, { Component } from 'react'
-import { Button, Form, Input, Card } from 'antd'
 import { withRouter, Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { UserOutlined, LockOutlined } from '@ant-design/icons'
-
-import './login.less'
 import { login } from '@/actions/user'
+import './login.less'
 
 const mapState = state => ({
     ...state.user
@@ -13,52 +10,60 @@ const mapState = state => ({
 @connect(mapState, { login })
 @withRouter
 class Login extends Component {
-    formRef = React.createRef()
+    state = {
+        username: '',
+        password: '',
 
-    onLogin = ({ username, password }) => {
+        isUsernameInputPromptVisible: false,
+        isPasswordInputPromptVisible: false,
+    }
+
+    changeUsername = (e) => {
+        this.setState({
+            username: e.currentTarget.value,
+            isUsernameInputPromptVisible: e.currentTarget.value ? false : true
+        })
+    }
+
+    changePassword = (e) => {
+        this.setState({
+            password: e.currentTarget.value,
+            isPasswordInputPromptVisible: e.currentTarget.value ? false : true
+        })
+    }
+
+    onLogin = () => {
+        const { username, password } = this.state
+        if (!username || !password) {
+            return
+        }
         this.props.login({ username, password })
     }
 
     render() {
         return (
-            this.props.isLogin ? <Redirect to="/" /> :
-                (
-                    <Card
-                        title={<div style={{ fontSize: 14, padding: '5px 0' }}>家庭文件管理系统登录</div>}
-                        className="login-wrapper"
-                    >
-                        <Form
-                            name="normal_login"
-                            className="login-form"
-                            initialValues={{ remember: true }}
-                            onFinish={this.onLogin}
-                            size="large"
-                        >
-                            <Form.Item
-                                name="username"
-                                style={{ marginTop: 12 }}
-                                rules={[{ required: true, message: '请输入用户名' }]}
-                            >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名" autoFocus={true}/>
-                            </Form.Item>
-                            <Form.Item
-                                name="password"
-                                style={{ marginTop: 24 }}
-                                rules={[{ required: true, message: '请输入密码' }]}
-                            >
-                                <Input
-                                    prefix={<LockOutlined className="site-form-item-icon" />}
-                                    type="password"
-                                    placeholder="密码"
-                                />
-                            </Form.Item>
-
-                            <Form.Item style={{ marginTop: 24 }}>
-                                <Button type="primary" htmlType="submit" style={{ width: '100%' }}>登录</Button>
-                            </Form.Item>
-                        </Form>
-                    </Card>
-                )
+            this.props.isLogin ? <Redirect to="/" /> : (
+                <div className="login-page">
+                    <div className="login-box">
+                        <div className="login-title"></div>
+                        <div className="input-item">
+                            <input id="username" required onChange={this.changeUsername} value={this.state.username} type="text"></input>
+                            <label htmlFor="username">用户名</label>
+                            <div className="bottom-line"></div>
+                            <span style={{ visibility: this.state.isUsernameInputPromptVisible ? 'visible' : 'hidden' }}>请输入用户名</span>
+                        </div>
+                        <div className="input-item">
+                            <input id="password" required onChange={this.changePassword} value={this.state.password} type="password"></input>
+                            <label htmlFor="password">密码</label>
+                            <div className="bottom-line"></div>
+                            <span style={{ visibility: this.state.isPasswordInputPromptVisible ? 'visible' : 'hidden' }}>请输入密码</span>
+                        </div>
+                        <div className="btn-submit">
+                            <button onClick={this.onLogin}>登 录</button>
+                        </div>
+                    </div>
+                </div>
+            )
         )
     }
 }

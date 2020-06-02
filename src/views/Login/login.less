@@ -1,8 +1,95 @@
-.login-wrapper {
-    width: 500px;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate3d(-50%, -50%, 0);
-    margin-top: -30px;
+.login-page {
+    height: 100%;
+    background-image: url('../../assets/bg.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .login-box {
+        text-align: center;
+        background: rgba(255, 255, 255, .2);
+        width: 300px;
+        padding: 40px;
+        border-radius: 2px;
+        >.login-title {
+            margin-bottom: 10px;
+        }
+        >.input-item {
+            text-align: left;
+            height: 38px;
+            position: relative;
+            box-sizing: border-box;
+            margin-bottom: 40px;
+            border: none;
+            >label {
+                position: absolute;
+                left: 0;
+                top: 12px;
+                translate: all 0.5s linear;
+                font-size: 14px;
+                cursor: pointer;
+                letter-spacing: 1px;
+                color: rgb(247, 247, 247);
+            }
+            >input {
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                outline: none;
+                color: rgb(247, 247, 247);
+                font-size: 14px;
+                cursor: pointer;
+                letter-spacing: 1px;
+                border: none;
+            }
+            >input:-webkit-autofill,
+            input:-webkit-autofill:hover,
+            input:-webkit-autofill:focus,
+            input:-webkit-autofill:active {
+                 -webkit-transition-delay: 99999s;
+                 -webkit-transition: color 99999s ease-out, background-color 99999s ease-out;
+            }
+            >input:focus + label ,input:valid + label{
+                top: -12px;
+                font-size: 12px;
+                color: rgb(65, 182, 255);
+            }
+            >.bottom-line {
+                border-bottom: 1px solid rgb(247, 247, 247);
+            }
+            >input:focus ~ .bottom-line {
+                border-bottom: 1px solid rgb(65, 182, 255);
+            }
+            >span {
+                color:red;
+                font-size: 12px;
+                visibility: hidden;
+            }
+            
+        }
+        >.btn-submit {
+            width: 100%;
+            margin-top: 50px;
+            >button {
+                width: 80%;
+                background: transparent;
+                outline: none;
+                padding: 5px 5px;
+                border-radius: 2px;
+                font-size: 13px;
+                color: rgb(247, 247, 247);
+                border: 1px solid rgb(247, 247, 247);
+                transition: border 1s;
+                transition: color .2s;
+                -webkit-transition: border 1s;
+                -webkit-transition: color .2s;
+                cursor: pointer;
+            }
+            >button:hover {
+                color: rgb(65, 182, 255);
+                border: 1px solid rgb(65, 182, 255);
+            }
+        }
+    }
 }
