@@ -34,10 +34,32 @@ class Login extends Component {
 
     onLogin = () => {
         const { username, password } = this.state
-        if (!username || !password) {
-            return
+        if(!username&&!password) {
+            this.setState({
+                isUsernameInputPromptVisible: true,
+                isPasswordInputPromptVisible: true
+            })
+            return;
+        }
+        if(!username) {
+            this.setState({
+                isUsernameInputPromptVisible: true
+            })
+            return;
+        }
+        if(!password) {
+            this.setState({
+                isPasswordInputPromptVisible: true
+            })
+            return;
         }
         this.props.login({ username, password })
+    }
+
+    onKeyDownchange = (e) => {
+        if(e.keyCode === 13) {
+            this.onLogin();
+        }
     }
 
     render() {
@@ -47,13 +69,13 @@ class Login extends Component {
                     <div className="login-box">
                         <div className="login-title"></div>
                         <div className="input-item">
-                            <input id="username" required onChange={this.changeUsername} value={this.state.username} type="text"></input>
+                            <input onKeyDown={e=>this.onKeyDownchange(e)} id="username" required onChange={this.changeUsername} value={this.state.username} type="text"></input>
                             <label htmlFor="username">用户名</label>
                             <div className="bottom-line"></div>
                             <span style={{ visibility: this.state.isUsernameInputPromptVisible ? 'visible' : 'hidden' }}>请输入用户名</span>
                         </div>
                         <div className="input-item">
-                            <input id="password" required onChange={this.changePassword} value={this.state.password} type="password"></input>
+                            <input onKeyDown={e=>this.onKeyDownchange(e)} id="password" required onChange={this.changePassword} value={this.state.password} type="password"></input>
                             <label htmlFor="password">密码</label>
                             <div className="bottom-line"></div>
                             <span style={{ visibility: this.state.isPasswordInputPromptVisible ? 'visible' : 'hidden' }}>请输入密码</span>
