@@ -1,12 +1,20 @@
 import React, { Component, Fragment, createRef } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import propTypes from 'prop-types'
+import Checkbox from '../Checkbox'
 
 import './table.less'
 import Column from './Column'
 
 export default class Table extends Component {
     headerRef = createRef()
+
+    changeChecked = (e) => {
+        
+    }
+    changeAllChecked = (e) => {
+
+    }
 
     render() {
         const columns = this.props.children.filter(item => item.type === Column)
@@ -19,7 +27,7 @@ export default class Table extends Component {
                         <Fragment>
                             {!this.props.rowSelection ? null : (
                                 <div className="ant-table-cell ant-table-selection-column">
-                                    <input type="checkbox" />
+                                    <Checkbox onChange={this.changeChecked}/>
                                 </div>
                             )}
                             {
@@ -62,17 +70,18 @@ export default class Table extends Component {
                 <div className="ant-table-container">
                     <div className="ant-table-content">
                         <div className="table">
-                            <div className="ant-table-thead">
+                            <div className="ant-table-thead" style={{height:'35px'}}>
                                 {!this.props.rowSelection ? null : (
                                     <div className="ant-table-cell ant-table-selection-column">
-                                        <div className="ant-table-selection">
+                                        {/* <div className="ant-table-selection">
                                             <label className="ant-checkbox-wrapper">
                                                 <span className="ant-checkbox">
                                                     <input type="checkbox" className="ant-checkbox-input" value />
                                                     <span className="ant-checkbox-inner"></span>
                                                 </span>
                                             </label>
-                                        </div>
+                                        </div> */}
+                                        <Checkbox onChange={this.changeAllChecked}/>
                                     </div>
                                 )}
                                 {
@@ -80,7 +89,9 @@ export default class Table extends Component {
                                         const columnProps = column.props
                                         const style = {
                                             ...columnProps.style,
-                                            textAlign: columnProps.align
+                                            textAlign: columnProps.align,
+                                            // 高度设置
+                                            height: '35px'
                                         }
                                         if (columnProps.width)
                                             style.width = columnProps.width

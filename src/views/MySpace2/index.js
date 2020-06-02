@@ -260,14 +260,14 @@ class MySpace extends Component {
                             return <FileFilled style={iconStyle} />
                         }}
                     />
-                    <Table.Column title="文件名" width={520} dataIndex="filename" />
+                    <Table.Column title="文件名" dataIndex="filename" />
                     <Table.Column title="文件大小" dataIndex="fileSize" render={(text, record) =>
                         filesize(record.fileSize)
                     } />
                     <Table.Column title="最近修改时间" dataIndex="updateTime" />
                     <Table.Column
                         title="操作"
-                        width={370}
+                        width={200}
                         className="table-operation"
                         render={(text, record, index) => {
                             const moreActionMenu = (
