@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, createRef } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal } from 'antd'
 import {
@@ -29,7 +29,9 @@ import './my-space.less'
 
 @withRouter
 class MySpace extends Component {
+
     state = {
+
         currentPath: '',
         sort: null,
 
@@ -323,11 +325,11 @@ class MySpace extends Component {
                             return <FileFilled style={iconStyle} />
                         }}
                     />
-                    <Table.Column title="文件名" dataIndex="filename" />
+                    <Table.Column title="文件名" dataIndex="filename" showOverflowTooltip={true} width={360}/>
                     <Table.Column title="文件大小" dataIndex="fileSize" width={150} render={(text, record) =>
                         filesize(record.fileSize)
                     } />
-                    <Table.Column title="最近修改时间" dataIndex="updateTime" width={270} />
+                    <Table.Column title="最近修改时间" dataIndex="updateTime" />
                     <Table.Column
                         title="操作"
                         width={280}
@@ -447,18 +449,21 @@ class MySpace extends Component {
                     onCancel={() => this.setState({ isCopyFileModalVisible: false })}
                     onOk={this.handleCopyFiles}
                 >
-                    <TreeSelect
-                        name="newDirectoryPath"
-                        showSearch
-                        style={{ width: '100%', margin: "6px 0 12px 0" }}
-                        value={this.state.selectedDirectoryPath}
-                        treeDefaultExpandAll={true}
-                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
-                        placeholder="请选择保存目录"
-                        treeDataSimpleMode
-                        onChange={(value) => this.setState({ selectedDirectoryPath: value })}
-                        treeData={treeData}
-                    />
+                    <div style={{display:'flex',justifyContent:'flex-start',alignItems:'center'}}>
+                        <div style={{width:'20%'}}>选择目标目录:</div>
+                        <TreeSelect
+                            name="newDirectoryPath"
+                            showSearch
+                            style={{ width: '80%', margin: "6px 0 12px 0" }}
+                            value={this.state.selectedDirectoryPath}
+                            treeDefaultExpandAll={true}
+                            dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                            placeholder="请选择保存目录"
+                            treeDataSimpleMode
+                            onChange={(value) => this.setState({ selectedDirectoryPath: value })}
+                            treeData={treeData}
+                        />
+                    </div>
                 </Modal>
             </>
         )

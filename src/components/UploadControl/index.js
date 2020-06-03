@@ -54,7 +54,7 @@ class UploadControl extends Component {
         return (
             <Fragment>
                 <div onClick={this.showUploadModal}>
-                    <UploadOutlined /><span>&nbsp;&nbsp;上传文件</span>
+                    <UploadOutlined /><span style={{cursor:'pointer'}}>&nbsp;&nbsp;上传文件</span>
                 </div>
 
                 <Modal
@@ -67,17 +67,20 @@ class UploadControl extends Component {
                     bodyStyle={{ padding: 0 }}
                     footer={null}
                 >
-                    <TreeSelect
-                        showSearch
-                        style={{ width: '100%', margin: "6px 0 12px 0" }}
-                        value={this.state.selectedDirectoryPath}
-                        treeDefaultExpandAll={true}
-                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
-                        placeholder="请选择保存目录"
-                        treeDataSimpleMode
-                        onChange={this.handleSelectDirectoryChange}
-                        treeData={treeData}
-                    />
+                    <div style={{display:'flex',justifyContent:'flex-start',alignItems:'center',boxSizing:"border-box",padding:'0 15px',margin:'10px 0'}}>
+                        <div style={{width:'20%'}}>选择目标目录:</div>
+                        <TreeSelect
+                            showSearch
+                            style={{ width: '80%', margin: "6px 0 12px 0" }}
+                            value={this.state.selectedDirectoryPath}
+                            treeDefaultExpandAll={true}
+                            dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                            placeholder="请选择保存目录"
+                            treeDataSimpleMode
+                            onChange={this.handleSelectDirectoryChange}
+                            treeData={treeData}
+                        />
+                    </div>
                     <Upload.Dragger
                         name="file"
                         multiple={true}
@@ -100,7 +103,7 @@ class UploadControl extends Component {
                 <div>
                     <Popover content={<UploadTaskList />} placement="bottomRight" trigger="click">
                         <Badge count={this.props.uploadingCount} offset={[15, 0]} style={{zIndex: 1}}>
-                            <UnorderedListOutlined /><span>&nbsp;&nbsp;上传记录</span>
+                            <UnorderedListOutlined /><span style={{cursor:'pointer'}}>&nbsp;&nbsp;上传记录</span>
                         </Badge>
                     </Popover>
                 </div>

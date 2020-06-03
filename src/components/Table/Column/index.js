@@ -15,6 +15,7 @@ export default class TableColumn extends Component {
         align: "center",
         style: {},
         flex: 1,
+        showOverflowTooltip: false
     }
 
     static propTypes = {
@@ -26,5 +27,6 @@ export default class TableColumn extends Component {
         flex: propTypes.number,
         render: propTypes.func,
         width: propTypes.number,
+        showOverflowTooltip: propTypes.bool
     }
 }

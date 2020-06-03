@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react'
 import { FixedSizeList as List } from 'react-window'
-import { Menu, Dropdown, Spin } from 'antd'
+import { Menu, Dropdown, Spin, Tooltip  } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import propTypes from 'prop-types'
 
@@ -73,6 +73,9 @@ export default class Table extends Component {
 
     render() {
         const columns = this.props.children.filter(item => item.type === Column)
+        const showOverflowTooltipList = columns.filter(item => item.props.showOverflowTooltip).map(item =>{
+            return item.props.dataIndex
+        })
 
         let listHeight = 610
         if (this.props.height) {
@@ -191,12 +194,35 @@ export default class Table extends Component {
                                                                 }
 
                                                                 let itemRender = rowData[columnProps.dataIndex]
+                                                                let itemRenderWith = 'getWith'.width(String(itemRender))
                                                                 if (columnProps.render) {
                                                                     itemRender = columnProps.render(itemRender, rowData, index)
                                                                 }
                                                                 return (
                                                                     <div key={columnIndex} className="ant-table-cell" style={style}>
-                                                                        {itemRender}
+                                                                        {
+                                                                            ((itemRender)=>{
+                                                                                //TODO 获取showOverflowTooltipList column 的宽度
+                                                                                if(showOverflowTooltipList.indexOf(columnProps.dataIndex)>=0 && itemRenderWith > 280) {
+                                                                                    return (
+                                                                                        <Tooltip title={itemRender} placement="right">
+                                                                                            <div className="row-vertical">
+                                                                                                {itemRender}
+                                                                                            </div>
+                                                                                        </Tooltip>
+                                                                                    )
+                                                                                } else {
+                                                                                    return (
+                                                                                        <div className="row-vertical">
+                                                                                            {itemRender}
+                                                                                        </div>
+                                                                                    )
+                                                                                }
+                                                                                
+                                                                                
+                                                                            })(itemRender)
+                                                                        }
+                                                                        
                                                                     </div>
                                                                 )
                                                             })
