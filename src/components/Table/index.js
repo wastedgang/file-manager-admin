@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react'
 import { FixedSizeList as List } from 'react-window'
-import { Menu, Dropdown } from 'antd'
+import { Menu, Dropdown, Spin } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import propTypes from 'prop-types'
 
@@ -96,9 +96,9 @@ export default class Table extends Component {
             <Menu>
                 {
                     rowSelections.map((item, index) => {
-                        if(item === Table.SELECTION_ALL) {
+                        if (item === Table.SELECTION_ALL) {
                             return <Menu.Item onClick={this.onCheckboxSelectAll} key={index}>全选所有</Menu.Item>
-                        } else if(item === Table.SELECTION_INVERT) {
+                        } else if (item === Table.SELECTION_INVERT) {
                             return <Menu.Item onClick={this.onCheckboxSelectInvert} key={index}>反选当页</Menu.Item>
                         }
                         return <Menu.Item onClick={item.onSelect} key={index}>{item.title}</Menu.Item>
@@ -110,103 +110,105 @@ export default class Table extends Component {
             <div className="ant-table ant-table-small" >
                 <div className="ant-table-container">
                     <div className="ant-table-content">
-                        <div className="table">
-                            <div className="ant-table-thead" style={{ height: this.props.itemSize }} ref={this.headerRef}>
-                                {!this.props.rowSelection ? null : (
-                                    <div className="ant-table-cell ant-table-selection-column">
-                                        <Checkbox
-                                            onClick={this.onHeaderCheckboxClick}
-                                            checked={selectedKeyLength === this.props.dataSource.length && selectedKeyLength > 0}
-                                            isIndeterminate={selectedKeyLength > 0 && selectedKeyLength !== this.props.dataSource.length}
-                                        />
-                                        {
-                                            rowSelections.length === 0 ? null : (
-                                                <div className="table-selection-extra">
-                                                    <Dropdown overlay={headerCheckboxDropdownMenu}>
-                                                        <span>
-                                                            <DownOutlined />
-                                                        </span>
-                                                    </Dropdown>
-                                                </div>
-                                            )
-                                        }
-                                    </div>
-                                )}
-                                {
-                                    columns.map((column, columnIndex) => {
-                                        const columnProps = column.props
-                                        const style = {
-                                            ...columnProps.style,
-                                            textAlign: columnProps.align,
-                                            // 高度设置
-                                            height: this.props.itemSize,
-                                        }
-                                        if (columnProps.width)
-                                            style.width = columnProps.width
-                                        else if (columnProps.flex) {
-                                            style.flex = columnProps.flex
-                                        }
-
-                                        return (
-                                            <div key={columnIndex} className="ant-table-cell" style={style}>
-                                                {columnProps.title}
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </div>
-                            <List
-                                className="ant-table-tbody"
-                                height={listHeight}
-                                itemCount={this.props.dataSource.length}
-                                itemSize={this.props.itemSize}
-                                width={this.state.headerWidth}
-                            >
-                                {/* 生成行数据 */}
-                                {({ index, style }) => {
-                                    const rowData = this.props.dataSource[index]
-                                    return (
-                                        <div className="table-row" key={rowData[this.props.rowKey]} style={style}>
+                        <Spin spinning={this.props.loading}>
+                            <div className="table">
+                                <div className="ant-table-thead" style={{ height: this.props.itemSize }} ref={this.headerRef}>
+                                    {!this.props.rowSelection ? null : (
+                                        <div className="ant-table-cell ant-table-selection-column">
+                                            <Checkbox
+                                                onClick={this.onHeaderCheckboxClick}
+                                                checked={selectedKeyLength === this.props.dataSource.length && selectedKeyLength > 0}
+                                                isIndeterminate={selectedKeyLength > 0 && selectedKeyLength !== this.props.dataSource.length}
+                                            />
                                             {
-                                                <>
-                                                    {!this.props.rowSelection ? null : (
-                                                        <div className="ant-table-cell ant-table-selection-column">
-                                                            <Checkbox
-                                                                onChange={(event) => this.onCheckboxChange(event, this.props.dataSource[index], index)}
-                                                                checked={selectedKeyMap[rowData[this.props.rowKey]] ? true : false} />
-                                                        </div>
-                                                    )}
-                                                    {
-                                                        columns.map((column, columnIndex) => {
-                                                            const columnProps = column.props
-                                                            const style = {
-                                                                ...columnProps.style,
-                                                                textAlign: columnProps.align
-                                                            }
-                                                            if (columnProps.width)
-                                                                style.width = columnProps.width
-                                                            else if (columnProps.flex) {
-                                                                style.flex = columnProps.flex
-                                                            }
-
-                                                            let itemRender = rowData[columnProps.dataIndex]
-                                                            if (columnProps.render) {
-                                                                itemRender = columnProps.render(itemRender, rowData, index)
-                                                            }
-                                                            return (
-                                                                <div key={columnIndex} className="ant-table-cell" style={style}>
-                                                                    {itemRender}
-                                                                </div>
-                                                            )
-                                                        })
-                                                    }
-                                                </>
+                                                rowSelections.length === 0 ? null : (
+                                                    <div className="table-selection-extra">
+                                                        <Dropdown overlay={headerCheckboxDropdownMenu}>
+                                                            <span>
+                                                                <DownOutlined />
+                                                            </span>
+                                                        </Dropdown>
+                                                    </div>
+                                                )
                                             }
                                         </div>
-                                    )
-                                }}
-                            </List>
-                        </div>
+                                    )}
+                                    {
+                                        columns.map((column, columnIndex) => {
+                                            const columnProps = column.props
+                                            const style = {
+                                                ...columnProps.style,
+                                                textAlign: columnProps.align,
+                                                // 高度设置
+                                                height: this.props.itemSize,
+                                            }
+                                            if (columnProps.width)
+                                                style.width = columnProps.width
+                                            else if (columnProps.flex) {
+                                                style.flex = columnProps.flex
+                                            }
+
+                                            return (
+                                                <div key={columnIndex} className="ant-table-cell" style={style}>
+                                                    {columnProps.title}
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                </div>
+                                <List
+                                    className="ant-table-tbody"
+                                    height={listHeight}
+                                    itemCount={this.props.dataSource.length}
+                                    itemSize={this.props.itemSize}
+                                    width={this.state.headerWidth}
+                                >
+                                    {/* 生成行数据 */}
+                                    {({ index, style }) => {
+                                        const rowData = this.props.dataSource[index]
+                                        return (
+                                            <div className="table-row" key={rowData[this.props.rowKey]} style={style}>
+                                                {
+                                                    <>
+                                                        {!this.props.rowSelection ? null : (
+                                                            <div className="ant-table-cell ant-table-selection-column">
+                                                                <Checkbox
+                                                                    onChange={(event) => this.onCheckboxChange(event, this.props.dataSource[index], index)}
+                                                                    checked={selectedKeyMap[rowData[this.props.rowKey]] ? true : false} />
+                                                            </div>
+                                                        )}
+                                                        {
+                                                            columns.map((column, columnIndex) => {
+                                                                const columnProps = column.props
+                                                                const style = {
+                                                                    ...columnProps.style,
+                                                                    textAlign: columnProps.align
+                                                                }
+                                                                if (columnProps.width)
+                                                                    style.width = columnProps.width
+                                                                else if (columnProps.flex) {
+                                                                    style.flex = columnProps.flex
+                                                                }
+
+                                                                let itemRender = rowData[columnProps.dataIndex]
+                                                                if (columnProps.render) {
+                                                                    itemRender = columnProps.render(itemRender, rowData, index)
+                                                                }
+                                                                return (
+                                                                    <div key={columnIndex} className="ant-table-cell" style={style}>
+                                                                        {itemRender}
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
+                                                    </>
+                                                }
+                                            </div>
+                                        )
+                                    }}
+                                </List>
+                            </div>
+                        </Spin>
                     </div>
                 </div>
             </div >

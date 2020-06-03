@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { connect } from 'react-redux'
-import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input } from 'antd'
+import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal } from 'antd'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -20,7 +19,6 @@ import {
 } from '@ant-design/icons'
 
 import { MessageBox, ModalForm, Table, TableCard } from '@/components'
-import { refreshFileList } from '@/actions/files'
 
 import ExplorerBreadcrumb from './ExplorerBreadcrumb'
 import queryString from 'query-string'
@@ -29,11 +27,6 @@ import axios from 'axios'
 
 import './my-space.less'
 
-const mapState = state => ({
-    // isFilesLoading: state.files.isLoading,
-    // files: state.files.files,
-})
-@connect(mapState, { refreshFileList })
 @withRouter
 class MySpace extends Component {
     state = {
@@ -49,6 +42,15 @@ class MySpace extends Component {
         isAddFolderModalVisible: false,
 
         isRenameFileModalVisible: false,
+
+        directories: [],
+        selectedDirectoryPath: '',
+
+        selectedFilenames: [],
+
+        isCopyFileModalVisible: false,
+
+        isMoveFileModalVisible: false,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -107,15 +109,36 @@ class MySpace extends Component {
         }
     }
 
-    // TODO: 批量删除文件
+    // 批量删除文件
     handleDeleteFiles = async (selectedFileList) => {
-        console.log('handleDeleteFiles', selectedFileList)
         try {
             await MessageBox.dangerConfirm({ content: '是否确定删除文件？' })
         } catch (err) {
             return
         }
-        // TODO: 删除文件
+        // 删除文件
+        try {
+            const requestData = {
+                directory_path: this.state.currentPath,
+                filenames: JSON.stringify(selectedFileList)
+            }
+            const response = await axios.post('/api/v1/my_space/file/delete', requestData)
+            if (response.data.code !== '000000') {
+                return
+            }
+
+            const selectedKeyMap = {}
+            for (let key of selectedFileList) {
+                selectedKeyMap[key] = true
+            }
+            this.setState({
+                shouldLoadFiles: true,
+                selectedRowKeys: this.state.selectedRowKeys.filter(key => !selectedKeyMap[key])
+            })
+            message.success('删除成功')
+        } catch (err) {
+            message.error('删除失败')
+        }
     }
 
     // TODO: 批量下载文件
@@ -128,17 +151,41 @@ class MySpace extends Component {
         console.log('handleShareFiles', selectedFileList)
     }
 
-    // TODO: 批量复制文件
-    handleCopyFiles = (selectedFileList) => {
-        console.log('handleCopyFiles', selectedFileList)
+    // 刷新文件夹列表
+    refreshDirectoryList = async () => {
+        try {
+            const response = await axios.get('/api/v1/my_space/directories')
+            if (response.data.code !== '000000') {
+                message.error(response.data.message)
+                return
+            }
+            this.setState({ directories: response.data.data.directories, selectedDirectoryPath: '' })
+        } catch (err) {
+            message.error('网络错误')
+        }
     }
 
+    // 打开复制文件对话框
+    showCopyFileModal = (selectedFileList) => {
+        this.setState({ selectedDirectoryPath: '', isCopyFileModalVisible: true, directories: [], selectedFilenames: selectedFileList })
+        this.refreshDirectoryList()
+    }
+    // TODO: 批量复制文件
+    handleCopyFiles = async () => {
+        // console.log('handleCopyFiles', selectedFileList)
+    }
+
+    // 打开移动文件对话框
+    showMoveFileModal = (selectedFileList) => {
+        this.setState({ selectedDirectoryPath: '', isMoveFileModalVisible: true, directories: [], selectedFilenames: selectedFileList })
+        this.refreshDirectoryList()
+    }
     // TODO: 批量移动文件
     handleMoveFiles = (selectedFileList) => {
         console.log('handleMoveFiles', selectedFileList)
     }
 
-    // TODO: 重命名文件
+    // 重命名文件
     handleRenameFile = async ({ newFilename }) => {
         try {
             const selectedFile = this.state.selectedFileList[0]
@@ -226,8 +273,8 @@ class MySpace extends Component {
         const rowSelection = this.getTableRowSelection()
 
         const batchActionMenuInfo = [
-            { icon: <CopyOutlined />, onClick: () => this.handleCopyFiles(this.state.selectedRowKeys), title: '复制' },
-            { icon: <ScissorOutlined />, onClick: () => this.handleMoveFiles(this.state.selectedRowKeys), title: '移动' },
+            { icon: <CopyOutlined />, onClick: () => this.showCopyFileModal(this.state.selectedRowKeys), title: '复制' },
+            { icon: <ScissorOutlined />, onClick: () => this.showMoveFileModal(this.state.selectedRowKeys), title: '移动' },
             { icon: <ShareAltOutlined />, onClick: () => this.handleShareFiles(this.state.selectedRowKeys), title: '共享' },
             { icon: <DeleteOutlined />, onClick: () => this.handleDeleteFiles(this.state.selectedRowKeys), title: '删除' }
         ]
@@ -240,6 +287,10 @@ class MySpace extends Component {
                 }
             </Menu>
         )
+
+        const treeData = this.state.directories.map(item => {
+            return { id: item.filepath, pId: item.parentDirectoryPath, value: item.filepath, title: item.filename }
+        })
         return (
             <>
                 <TableCard
@@ -254,6 +305,8 @@ class MySpace extends Component {
                             <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true })}>刷新</Button>
                         </Space>
                     )}
+
+                    loading={this.state.isFilesLoading}
 
                     dataSource={this.state.files}
                     rowSelection={rowSelection}
@@ -289,8 +342,8 @@ class MySpace extends Component {
                                     >
                                         重命名
                                     </Menu.Item>
-                                    <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.handleCopyFiles([record.filename])}>复制</Menu.Item>
-                                    <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.handleMoveFiles([record.filename])}>移动</Menu.Item>
+                                    <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.showCopyFileModal([record.filename])}>复制</Menu.Item>
+                                    <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.showMoveFileModal([record.filename])}>移动</Menu.Item>
                                     <Menu.Item key="4" icon={<DeleteOutlined />} onClick={() => this.handleDeleteFiles([record.filename])}>删除</Menu.Item>
                                 </Menu>
                             )
@@ -386,6 +439,27 @@ class MySpace extends Component {
                         <Input placeholder="新文件名" autoFocus={true} />
                     </Form.Item>
                 </ModalForm>
+
+                {/* 复制对话框 */}
+                <Modal
+                    title="复制文件"
+                    visible={this.state.isCopyFileModalVisible}
+                    onCancel={() => this.setState({ isCopyFileModalVisible: false })}
+                    onOk={this.handleCopyFiles}
+                >
+                    <TreeSelect
+                        name="newDirectoryPath"
+                        showSearch
+                        style={{ width: '100%', margin: "6px 0 12px 0" }}
+                        value={this.state.selectedDirectoryPath}
+                        treeDefaultExpandAll={true}
+                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                        placeholder="请选择保存目录"
+                        treeDataSimpleMode
+                        onChange={(value) => this.setState({ selectedDirectoryPath: value })}
+                        treeData={treeData}
+                    />
+                </Modal>
             </>
         )
     }

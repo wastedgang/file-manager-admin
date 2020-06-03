@@ -60,6 +60,8 @@ export default class TableCard extends Component {
         description: PropTypes.any,
         extra: PropTypes.any,
 
+        loading: PropTypes.bool,
+
         dataSource: PropTypes.array.isRequired,
         rowKey: PropTypes.string.isRequired,
         loading: PropTypes.bool,

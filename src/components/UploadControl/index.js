@@ -77,8 +77,7 @@ class UploadControl extends Component {
                         treeDataSimpleMode
                         onChange={this.handleSelectDirectoryChange}
                         treeData={treeData}
-                    >
-                    </TreeSelect>
+                    />
                     <Upload.Dragger
                         name="file"
                         multiple={true}
