@@ -47,6 +47,8 @@ class MySpace extends Component {
         selectedRowKeys: [],
 
         isAddFolderModalVisible: false,
+
+        isRenameFileModalVisible: false,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -137,8 +139,27 @@ class MySpace extends Component {
     }
 
     // TODO: 重命名文件
-    handleRenameFile = (fileInfo, index) => {
-        console.log('handleRenameFile', fileInfo)
+    handleRenameFile = async ({ newFilename }) => {
+        try {
+            const selectedFile = this.state.selectedFileList[0]
+            const requestData = {
+                directory_path: selectedFile.directoryPath,
+                old_filename: selectedFile.filename,
+                new_filename: newFilename,
+            }
+            const response = await axios.post('/api/v1/my_space/file/rename', requestData)
+            if (response.data.code !== '000000') {
+                return
+            }
+            this.setState({
+                shouldLoadFiles: true,
+                isRenameFileModalVisible: false,
+                selectedRowKeys: this.state.selectedRowKeys.filter(key => key !== newFilename)
+            })
+            message.success('重命名成功')
+        } catch (err) {
+            message.error('重命名失败')
+        }
     }
 
     // 新建文件夹
@@ -188,7 +209,6 @@ class MySpace extends Component {
             onChange: selectedRowKeys => {
                 this.setState({ selectedRowKeys: selectedRowKeys })
             },
-            hideDefaultSelections: true,
             selections: [
                 Table.SELECTION_ALL,
                 Table.SELECTION_INVERT
@@ -237,7 +257,6 @@ class MySpace extends Component {
 
                     dataSource={this.state.files}
                     rowSelection={rowSelection}
-                    selectedRowKeys={this.state.selectedRowKeys}
                     rowKey="filename"
                 >
                     <Table.Column
@@ -263,7 +282,13 @@ class MySpace extends Component {
                         render={(text, record, index) => {
                             const moreActionMenu = (
                                 <Menu>
-                                    <Menu.Item key="1" icon={<FormOutlined />} onClick={() => this.handleRenameFile([record.filename])}>重命名</Menu.Item>
+                                    <Menu.Item
+                                        key="1"
+                                        icon={<FormOutlined />}
+                                        onClick={() => this.setState({ isRenameFileModalVisible: true, selectedFileList: [record] })}
+                                    >
+                                        重命名
+                                    </Menu.Item>
                                     <Menu.Item key="2" icon={<CopyOutlined />} onClick={() => this.handleCopyFiles([record.filename])}>复制</Menu.Item>
                                     <Menu.Item key="3" icon={<ScissorOutlined />} onClick={() => this.handleMoveFiles([record.filename])}>移动</Menu.Item>
                                     <Menu.Item key="4" icon={<DeleteOutlined />} onClick={() => this.handleDeleteFiles([record.filename])}>删除</Menu.Item>
@@ -317,6 +342,7 @@ class MySpace extends Component {
                         }}
                     />
                 </TableCard>
+
                 {/* 新建文件夹对话框 */}
                 <ModalForm
                     title="新建文件夹"
@@ -336,6 +362,28 @@ class MySpace extends Component {
                         ]}
                     >
                         <Input placeholder="文件名" autoFocus={true} />
+                    </Form.Item>
+                </ModalForm>
+
+                {/* 重命名对话框 */}
+                <ModalForm
+                    title="文件重命名"
+                    labelCol={{ span: 5 }}
+                    wrapperCol={{ span: 17 }}
+                    visible={this.state.isRenameFileModalVisible}
+                    onCancel={() => this.setState({ isRenameFileModalVisible: false })}
+                    onFinish={this.handleRenameFile}
+                    initialValues={{ newFilename: '' }}
+                >
+                    <Form.Item
+                        name="newFilename"
+                        label="新文件名"
+                        rules={[
+                            { required: true, message: '请输入新文件名' },
+                            { pattern: /^[^/:]+$/, message: '请输入正确的新文件名' }
+                        ]}
+                    >
+                        <Input placeholder="新文件名" autoFocus={true} />
                     </Form.Item>
                 </ModalForm>
             </>

@@ -13,10 +13,24 @@ export default class Table extends Component {
         headerWidth: null,
     }
 
-    changeChecked = (e) => {
+    onCheckboxChange = (event, record) => {
+        if(!this.props.rowSelection || !this.props.rowSelection.onChange) {
+            return
+        }
+        const key = record[this.props.rowKey]
+        const selectedRowKeys = this.props.rowSelection.selectedRowKeys.filter(item => item !== key)
+        if(event.target.checked) {
+            selectedRowKeys.push(key)
+        }
+        this.props.rowSelection.onChange(selectedRowKeys)
     }
 
-    changeAllChecked = (e) => {
+    onCheckboxSelectAll = () => {
+        console.log('onCheckboxSelectAll')
+    }
+
+    onCheckboxSelectInvert = () => {
+        console.log('onCheckboxSelectInvert')
     }
 
     componentDidUpdate() {
@@ -29,8 +43,15 @@ export default class Table extends Component {
         const columns = this.props.children.filter(item => item.type === Column)
 
         let listHeight = 610
-        if(this.props.height) {
+        if (this.props.height) {
             listHeight = this.props.height - this.props.itemSize <= 0 ? 0 : this.props.height - this.props.itemSize
+        }
+
+        const selectedKeyMap = {}
+        if (this.props.rowSelection && this.props.rowSelection.selectedRowKeys) {
+            for (let key of this.props.rowSelection.selectedRowKeys) {
+                selectedKeyMap[key] = true
+            }
         }
         return (
             <div className="ant-table ant-table-small" >
@@ -40,14 +61,6 @@ export default class Table extends Component {
                             <div className="ant-table-thead" style={{ height: this.props.itemSize }} ref={this.headerRef}>
                                 {!this.props.rowSelection ? null : (
                                     <div className="ant-table-cell ant-table-selection-column">
-                                        {/* <div className="ant-table-selection">
-                                            <label className="ant-checkbox-wrapper">
-                                                <span className="ant-checkbox">
-                                                    <input type="checkbox" className="ant-checkbox-input" value />
-                                                    <span className="ant-checkbox-inner"></span>
-                                                </span>
-                                            </label>
-                                        </div> */}
                                         <Checkbox onChange={this.changeAllChecked} />
                                     </div>
                                 )}
@@ -58,7 +71,7 @@ export default class Table extends Component {
                                             ...columnProps.style,
                                             textAlign: columnProps.align,
                                             // 高度设置
-                                            height: '35px'
+                                            height: this.props.itemSize,
                                         }
                                         if (columnProps.width)
                                             style.width = columnProps.width
@@ -90,7 +103,9 @@ export default class Table extends Component {
                                                 <>
                                                     {!this.props.rowSelection ? null : (
                                                         <div className="ant-table-cell ant-table-selection-column">
-                                                            <Checkbox onChange={this.changeChecked} />
+                                                            <Checkbox
+                                                                onChange={(event) => this.onCheckboxChange(event, this.props.dataSource[index], index)}
+                                                                checked={selectedKeyMap[rowData[this.props.rowKey]] ? true : false} />
                                                         </div>
                                                     )}
                                                     {
@@ -132,12 +147,21 @@ export default class Table extends Component {
 
     static Column = Column
 
+    static SELECTION_ALL = "SELECT_ALL"
+    static SELECTION_INVERT = "SELECT_INVERT"
+
     static defaultProps = {
         dataSource: [],
         loading: false,
 
         itemSize: 35,
         height: 610,
+
+        rowSelection: {
+            selectedRowKeys: [],
+            selections: [],
+            onChange: null,
+        }
     }
 
     static propTypes = {
@@ -147,5 +171,20 @@ export default class Table extends Component {
 
         height: propTypes.number,
         itemSize: propTypes.number,
+
+        rowSelection: propTypes.shape({
+            selectedRowKeys: propTypes.oneOfType([
+                propTypes.arrayOf(propTypes.string),
+                propTypes.arrayOf(propTypes.number)
+            ]).isRequired,
+            onChange: propTypes.func.isRequired,
+            selections: propTypes.arrayOf(propTypes.oneOfType([
+                propTypes.oneOf([Table.SELECTION_ALL, Table.SELECTION_INVERT]),
+                propTypes.shape({
+                    text: propTypes.string,
+                    onSelect: propTypes.func,
+                })
+            ]))
+        }),
     }
 }
