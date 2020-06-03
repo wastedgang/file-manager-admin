@@ -1,36 +1,68 @@
 import React, { Component, createRef } from 'react'
 import { FixedSizeList as List } from 'react-window'
+import { Menu, Dropdown } from 'antd'
+import { DownOutlined } from '@ant-design/icons'
 import propTypes from 'prop-types'
-import Checkbox from './Checkbox'
 
 import './table.less'
 import Column from './Column'
+import Checkbox from './Checkbox'
 
 export default class Table extends Component {
     headerRef = createRef()
 
     state = {
         headerWidth: null,
+        selectedRowKeys: {},
+    }
+
+    getSelectedKeyMap = () => {
+        const selectedKeyMap = {}
+        if (this.props.rowSelection && this.props.rowSelection.selectedRowKeys) {
+            for (let key of this.props.rowSelection.selectedRowKeys) {
+                selectedKeyMap[key] = true
+            }
+        }
+        return selectedKeyMap
     }
 
     onCheckboxChange = (event, record) => {
-        if(!this.props.rowSelection || !this.props.rowSelection.onChange) {
+        if (!this.props.rowSelection || !this.props.rowSelection.onChange) {
             return
         }
         const key = record[this.props.rowKey]
         const selectedRowKeys = this.props.rowSelection.selectedRowKeys.filter(item => item !== key)
-        if(event.target.checked) {
+        if (event.target.checked) {
             selectedRowKeys.push(key)
         }
         this.props.rowSelection.onChange(selectedRowKeys)
     }
 
+    onHeaderCheckboxClick = () => {
+        if (!this.props.rowSelection || !this.props.rowSelection.onChange) {
+            return
+        }
+
+        const selectedKeyMap = this.getSelectedKeyMap()
+        const selectedKeyLength = Object.keys(selectedKeyMap).length
+        if (selectedKeyLength === this.props.dataSource.length) {
+            this.props.rowSelection.onChange([])
+        } else {
+            this.props.rowSelection.onChange(this.props.dataSource.map(item => item[this.props.rowKey]))
+        }
+    }
+
     onCheckboxSelectAll = () => {
-        console.log('onCheckboxSelectAll')
+        this.props.rowSelection.onChange(this.props.dataSource.map(item => item[this.props.rowKey]))
     }
 
     onCheckboxSelectInvert = () => {
-        console.log('onCheckboxSelectInvert')
+        if (!this.props.rowSelection || !this.props.rowSelection.onChange) {
+            return
+        }
+
+        const selectedKeyMap = this.getSelectedKeyMap()
+        this.props.rowSelection.onChange(this.props.dataSource.map(item => item[this.props.rowKey]).filter(key => !selectedKeyMap[key]))
     }
 
     componentDidUpdate() {
@@ -53,6 +85,27 @@ export default class Table extends Component {
                 selectedKeyMap[key] = true
             }
         }
+        const selectedKeyLength = Object.keys(selectedKeyMap).length
+
+
+        let rowSelections = []
+        if (this.props.rowSelection && this.props.rowSelection.selections) {
+            rowSelections = this.props.rowSelection.selections
+        }
+        const headerCheckboxDropdownMenu = (
+            <Menu>
+                {
+                    rowSelections.map((item, index) => {
+                        if(item === Table.SELECTION_ALL) {
+                            return <Menu.Item onClick={this.onCheckboxSelectAll} key={index}>全选所有</Menu.Item>
+                        } else if(item === Table.SELECTION_INVERT) {
+                            return <Menu.Item onClick={this.onCheckboxSelectInvert} key={index}>反选当页</Menu.Item>
+                        }
+                        return <Menu.Item onClick={item.onSelect} key={index}>{item.title}</Menu.Item>
+                    })
+                }
+            </Menu>
+        )
         return (
             <div className="ant-table ant-table-small" >
                 <div className="ant-table-container">
@@ -61,7 +114,22 @@ export default class Table extends Component {
                             <div className="ant-table-thead" style={{ height: this.props.itemSize }} ref={this.headerRef}>
                                 {!this.props.rowSelection ? null : (
                                     <div className="ant-table-cell ant-table-selection-column">
-                                        <Checkbox onChange={this.changeAllChecked} />
+                                        <Checkbox
+                                            onClick={this.onHeaderCheckboxClick}
+                                            checked={selectedKeyLength === this.props.dataSource.length && selectedKeyLength > 0}
+                                            isIndeterminate={selectedKeyLength > 0 && selectedKeyLength !== this.props.dataSource.length}
+                                        />
+                                        {
+                                            rowSelections.length === 0 ? null : (
+                                                <div className="table-selection-extra">
+                                                    <Dropdown overlay={headerCheckboxDropdownMenu}>
+                                                        <span>
+                                                            <DownOutlined />
+                                                        </span>
+                                                    </Dropdown>
+                                                </div>
+                                            )
+                                        }
                                     </div>
                                 )}
                                 {
@@ -177,7 +245,7 @@ export default class Table extends Component {
                 propTypes.arrayOf(propTypes.string),
                 propTypes.arrayOf(propTypes.number)
             ]).isRequired,
-            onChange: propTypes.func.isRequired,
+            onChange: propTypes.func,
             selections: propTypes.arrayOf(propTypes.oneOfType([
                 propTypes.oneOf([Table.SELECTION_ALL, Table.SELECTION_INVERT]),
                 propTypes.shape({
