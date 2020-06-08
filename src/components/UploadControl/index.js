@@ -84,6 +84,7 @@ class UploadControl extends Component {
                     <Upload.Dragger
                         name="file"
                         multiple={true}
+                        disabled={!this.state.selectedDirectoryPath}
                         showUploadList={false}
                         withCredentials={true}
                         beforeUpload={this.handleBeforeUpload}

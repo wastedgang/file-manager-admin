@@ -64,6 +64,5 @@ export default class TableCard extends Component {
 
         dataSource: PropTypes.array.isRequired,
         rowKey: PropTypes.string.isRequired,
-        loading: PropTypes.bool,
     }
 }
