@@ -52,11 +52,7 @@
         align-items: center;
         .ant-table-cell {
             height: 100%;
-            //缺少垂直居中
-            line-height: 30px;
             overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
             .ant-table-cell-common
         }
 
@@ -68,4 +64,16 @@
     >.ant-table-tbody div>.table-row:hover {
         background-color: #fafafa;
     }
+}
+
+//垂直居中
+.row-vertical {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: relative;
+    top: 50%;
+    transform: translateY(-40%);
 }

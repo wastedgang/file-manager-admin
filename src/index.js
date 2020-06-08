@@ -11,6 +11,18 @@ import '@/config/axios'
 import './index.less'
 import App from './App'
 
+String.prototype.width = function getSpanWidth(str) {
+    var width = 0;
+    var html = document.createElement('span');
+    html.innerText = str;
+    html.className = 'getTextWidth';
+    document.querySelector('body').appendChild(html);
+    width = document.querySelector('.getTextWidth').offsetWidth;
+    document.querySelector('.getTextWidth').remove();
+    return width;
+}
+
+
 render(
     <Provider store={store}>
         <ConfigProvider locale={zhCN}>

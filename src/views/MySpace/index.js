@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, createRef } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal } from 'antd'
 import {
@@ -29,7 +29,9 @@ import './my-space.less'
 
 @withRouter
 class MySpace extends Component {
+
     state = {
+
         currentPath: '',
         sort: null,
 
@@ -103,7 +105,7 @@ class MySpace extends Component {
         try {
             const response = await axios.get('/api/v1/my_space/files', { params: requestParams })
             if (response.data.code === '000000') {
-                if(this.state.shouldPromptLoaded) {
+                if (this.state.shouldPromptLoaded) {
                     message.success('刷新成功')
                 }
                 this.setState({ isFilesLoading: false, files: response.data.data.files, shouldPromptLoaded: false })
@@ -162,7 +164,7 @@ class MySpace extends Component {
             if (response.data.code !== '000000') {
                 return
             }
-            this.setState({ directories: response.data.data.directories, selectedDirectoryPath: ''})
+            this.setState({ directories: response.data.data.directories, selectedDirectoryPath: '' })
         } catch (err) {
             message.error('网络错误')
         }
@@ -175,11 +177,11 @@ class MySpace extends Component {
     }
     // TODO: 批量复制文件
     handleCopyFiles = async () => {
-        if(!this.state.selectedDirectoryPath) {
+        if (!this.state.selectedDirectoryPath) {
             message.warning('请选择目标文件夹')
             return
         }
-        if(!this.state.selectedDirectoryPath && !(/^\/.*[^/]$/.test(this.state.selectedDirectoryPath))) {
+        if (!this.state.selectedDirectoryPath && !(/^\/.*[^/]$/.test(this.state.selectedDirectoryPath))) {
             message.warning('请选择正确的目标文件夹')
             return
         }
@@ -190,12 +192,12 @@ class MySpace extends Component {
                 target_directory_path: this.state.selectedDirectoryPath,
             }
             const response = await axios.post('/api/v1/my_space/file/copy', requestData)
-            if(response.data.code !== '000000') {
+            if (response.data.code !== '000000') {
                 return
             }
-            this.setState({shouldLoadFiles: true, isCopyFileModalVisible: false})
+            this.setState({ shouldLoadFiles: true, isCopyFileModalVisible: false })
             message.success('复制成功')
-        } catch(err) {
+        } catch (err) {
             message.error('复制文件')
         }
         console.log('handleCopyFiles', this.state.selectedFilenames)
@@ -351,11 +353,11 @@ class MySpace extends Component {
                             return <FileFilled style={iconStyle} />
                         }}
                     />
-                    <Table.Column title="文件名" dataIndex="filename" />
+                    <Table.Column title="文件名" dataIndex="filename" showOverflowTooltip={true} width={360} />
                     <Table.Column title="文件大小" dataIndex="fileSize" width={150} render={(text, record) =>
                         filesize(record.fileSize)
                     } />
-                    <Table.Column title="最近修改时间" dataIndex="updateTime" width={270} />
+                    <Table.Column title="最近修改时间" dataIndex="updateTime" />
                     <Table.Column
                         title="操作"
                         width={280}
@@ -475,19 +477,22 @@ class MySpace extends Component {
                     onCancel={() => this.setState({ isCopyFileModalVisible: false })}
                     onOk={this.handleCopyFiles}
                 >
-                    <TreeSelect
-                        name="newDirectoryPath"
-                        showSearch
-                        disabled={this.state.directories.length === 0}
-                        style={{ width: '100%', margin: "6px 0 12px 0" }}
-                        value={this.state.selectedDirectoryPath}
-                        treeDefaultExpandAll={true}
-                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
-                        placeholder="请选择目标文件夹"
-                        treeDataSimpleMode
-                        onChange={(value) => this.setState({ selectedDirectoryPath: value })}
-                        treeData={treeData}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                        <div style={{ width: '24%' }}>请选择目标文件夹:</div>
+                        <TreeSelect
+                            name="newDirectoryPath"
+                            showSearch
+                            disabled={this.state.directories.length === 0}
+                            style={{ width: '76%', margin: "6px 0 12px 0" }}
+                            value={this.state.selectedDirectoryPath}
+                            treeDefaultExpandAll={true}
+                            dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                            placeholder="请选择目标文件夹"
+                            treeDataSimpleMode
+                            onChange={(value) => this.setState({ selectedDirectoryPath: value })}
+                            treeData={treeData}
+                        />
+                    </div>
                 </Modal>
 
                 {/* 移动对话框 */}

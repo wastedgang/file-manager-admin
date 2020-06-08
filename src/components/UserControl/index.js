@@ -74,7 +74,7 @@ class UserControl extends Component {
                     <Fragment>
                         <div>
                             <Dropdown overlay={menu} trigger={['hover']}>
-                                <div>
+                                <div style={{cursor:'pointer'}}>
                                     你好，{this.props.userInfo.nickname ? this.props.userInfo.nickname : this.props.userInfo.username} <DownOutlined />
                                 </div>
                             </Dropdown>
