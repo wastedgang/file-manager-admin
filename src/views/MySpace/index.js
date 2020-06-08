@@ -36,6 +36,7 @@ class MySpace extends Component {
         shouldLoadFiles: false,
         files: [],
         isFilesLoading: false,
+        shouldPromptLoaded: false,
 
         selectedRowKeys: [],
 
@@ -102,7 +103,10 @@ class MySpace extends Component {
         try {
             const response = await axios.get('/api/v1/my_space/files', { params: requestParams })
             if (response.data.code === '000000') {
-                this.setState({ isFilesLoading: false, files: response.data.data.files })
+                if(this.state.shouldPromptLoaded) {
+                    message.success('刷新成功')
+                }
+                this.setState({ isFilesLoading: false, files: response.data.data.files, shouldPromptLoaded: false })
             }
         } catch (err) {
             message.error('获取存储空间列表失败')
@@ -156,10 +160,9 @@ class MySpace extends Component {
         try {
             const response = await axios.get('/api/v1/my_space/directories')
             if (response.data.code !== '000000') {
-                message.error(response.data.message)
                 return
             }
-            this.setState({ directories: response.data.data.directories, selectedDirectoryPath: '' })
+            this.setState({ directories: response.data.data.directories, selectedDirectoryPath: ''})
         } catch (err) {
             message.error('网络错误')
         }
@@ -172,7 +175,31 @@ class MySpace extends Component {
     }
     // TODO: 批量复制文件
     handleCopyFiles = async () => {
-        // console.log('handleCopyFiles', selectedFileList)
+        if(!this.state.selectedDirectoryPath) {
+            message.warning('请选择目标文件夹')
+            return
+        }
+        if(!this.state.selectedDirectoryPath && !(/^\/.*[^/]$/.test(this.state.selectedDirectoryPath))) {
+            message.warning('请选择正确的目标文件夹')
+            return
+        }
+        try {
+            const requestData = {
+                source_directory_path: this.state.currentPath,
+                filenames: JSON.stringify(this.state.selectedFilenames),
+                target_directory_path: this.state.selectedDirectoryPath,
+            }
+            const response = await axios.post('/api/v1/my_space/file/copy', requestData)
+            if(response.data.code !== '000000') {
+                return
+            }
+            this.setState({shouldLoadFiles: true, isCopyFileModalVisible: false})
+            message.success('复制成功')
+        } catch(err) {
+            message.error('复制文件')
+        }
+        console.log('handleCopyFiles', this.state.selectedFilenames)
+        // this.setState({isCopyFileModalVisible: false})
     }
 
     // 打开移动文件对话框
@@ -181,8 +208,9 @@ class MySpace extends Component {
         this.refreshDirectoryList()
     }
     // TODO: 批量移动文件
-    handleMoveFiles = (selectedFileList) => {
-        console.log('handleMoveFiles', selectedFileList)
+    handleMoveFiles = async () => {
+        console.log('handleMoveFiles', this.state.selectedFilenames)
+        // this.setState({isMoveFileModalVisible: false})
     }
 
     // 重命名文件
@@ -302,7 +330,7 @@ class MySpace extends Component {
                                 <Button icon={<MoreOutlined />}>批量操作</Button>
                             </Dropdown>
                             <Button icon={<FolderAddOutlined />} onClick={() => this.setState({ isAddFolderModalVisible: true })}>新建文件夹</Button>
-                            <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true })}>刷新</Button>
+                            <Button icon={<ReloadOutlined />} onClick={() => this.setState({ shouldLoadFiles: true, shouldPromptLoaded: true })}>刷新</Button>
                         </Space>
                     )}
 
@@ -450,11 +478,34 @@ class MySpace extends Component {
                     <TreeSelect
                         name="newDirectoryPath"
                         showSearch
+                        disabled={this.state.directories.length === 0}
                         style={{ width: '100%', margin: "6px 0 12px 0" }}
                         value={this.state.selectedDirectoryPath}
                         treeDefaultExpandAll={true}
                         dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
-                        placeholder="请选择保存目录"
+                        placeholder="请选择目标文件夹"
+                        treeDataSimpleMode
+                        onChange={(value) => this.setState({ selectedDirectoryPath: value })}
+                        treeData={treeData}
+                    />
+                </Modal>
+
+                {/* 移动对话框 */}
+                <Modal
+                    title="移动文件"
+                    visible={this.state.isMoveFileModalVisible}
+                    onCancel={() => this.setState({ isMoveFileModalVisible: false })}
+                    onOk={this.handleMoveFiles}
+                >
+                    <TreeSelect
+                        name="newDirectoryPath"
+                        showSearch
+                        disabled={this.state.directories.length === 0}
+                        style={{ width: '100%', margin: "6px 0 12px 0" }}
+                        value={this.state.selectedDirectoryPath}
+                        treeDefaultExpandAll={true}
+                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                        placeholder="请选择目标文件夹"
                         treeDataSimpleMode
                         onChange={(value) => this.setState({ selectedDirectoryPath: value })}
                         treeData={treeData}
