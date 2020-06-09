@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal } from 'antd'
+import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal, List } from 'antd'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -15,7 +15,10 @@ import {
     FormOutlined,
     ScissorOutlined,
     FolderAddOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    SwapOutlined,
+    EditOutlined,
+    RedoOutlined
 } from '@ant-design/icons'
 
 import { MessageBox, ModalForm, Table, TableCard } from '@/components'
@@ -29,9 +32,7 @@ import './my-space.less'
 
 @withRouter
 class MySpace extends Component {
-
     state = {
-
         currentPath: '',
         sort: null,
 
@@ -54,6 +55,11 @@ class MySpace extends Component {
         isCopyFileModalVisible: false,
 
         isMoveFileModalVisible: false,
+
+        actionModalTitle: '',
+        isActionModalVisible: false,
+        actionModalPromiseResolve: null,
+        shouldPerformSameAction: false,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -170,13 +176,106 @@ class MySpace extends Component {
         }
     }
 
+    // 使用操作询问对话框
+    showActionModal = (title) => {
+        return new Promise((resolve, reject) => {
+            this.setState({ actionModalTitle: title, isActionModalVisible: true, actionModalPromiseResolve: resolve })
+        })
+    }
+    // 返回操作询问结果
+    hideActionModal = (action) => {
+        const promiseResolve = this.state.actionModalPromiseResolve
+        this.setState({ actionModalTitle: '', isActionModalVisible: false, actionModalPromiseResolve: null })
+        if (promiseResolve) {
+            promiseResolve(action)
+        }
+    }
+
     // 打开复制文件对话框
     showCopyFileModal = (selectedFileList) => {
-        this.setState({ selectedDirectoryPath: '', isCopyFileModalVisible: true, directories: [], selectedFilenames: selectedFileList })
+        this.setState({
+            selectedDirectoryPath: '', isCopyFileModalVisible: true, directories: [],
+            selectedFilenames: selectedFileList, shouldPerformSameAction: false
+        })
         this.refreshDirectoryList()
     }
     // TODO: 批量复制文件
     handleCopyFiles = async () => {
+        const sourceDirectoryPath = this.state.currentPath
+        const targetDirectoryPath = this.state.selectedDirectoryPath
+        const selectedFilenames = this.state.selectedFilenames
+        if (!targetDirectoryPath) {
+            message.warning('请选择目标文件夹')
+            return
+        }
+        if (!targetDirectoryPath && !(/^\/.*[^/]$/.test(targetDirectoryPath))) {
+            message.warning('请选择正确的目标文件夹')
+            return
+        }
+
+        const targetDirectoryFileMap = {}
+        if (targetDirectoryPath !== sourceDirectoryPath) {
+            try {
+                const response = await axios.get('/api/v1/my_space/files', { params: { directory_path: targetDirectoryPath } })
+                if (response.data.code !== '000000') {
+                    return
+                }
+                for (let fileInfo of response.data.data.files) {
+                    targetDirectoryFileMap[fileInfo.filename] = fileInfo
+                }
+            } catch (err) {
+                message.error('网络错误')
+                return
+            }
+        }
+        console.log(targetDirectoryFileMap)
+
+        let sameActionType = null
+        for (let index = 0; index < selectedFilenames.length; index++) {
+            const filename = selectedFilenames[index]
+            // 计算需要询问的文件数量
+            let remainPromptCount = 0
+            for (let i = index; i < selectedFilenames.length; i++) {
+                if (targetDirectoryFileMap[selectedFilenames[i]]) {
+                    remainPromptCount++
+                }
+            }
+
+            if (sameActionType === null && remainPromptCount > 0) {
+                // 需要询问
+                const action = await this.showActionModal('复制文件')
+                console.log(action)
+            }
+        }
+        return
+        try {
+            const requestData = {
+                source_directory_path: sourceDirectoryPath,
+                filenames: JSON.stringify(selectedFilenames),
+                target_directory_path: targetDirectoryPath,
+            }
+            // const response = await axios.post('/api/v1/my_space/file/copy', requestData)
+            // if (response.data.code !== '000000') {
+            //     return
+            // }
+            // this.setState({ shouldLoadFiles: true, isCopyFileModalVisible: false })
+            // message.success('复制成功')
+        } catch (err) {
+            message.error('复制文件')
+        }
+        console.log('handleCopyFiles', selectedFilenames)
+    }
+
+    // 打开移动文件对话框
+    showMoveFileModal = async (selectedFileList) => {
+        this.setState({
+            selectedDirectoryPath: '', isMoveFileModalVisible: true, directories: [],
+            selectedFilenames: selectedFileList, shouldPerformSameAction: false
+        })
+        this.refreshDirectoryList()
+    }
+    // TODO: 批量移动文件
+    handleMoveFiles = async () => {
         if (!this.state.selectedDirectoryPath) {
             message.warning('请选择目标文件夹')
             return
@@ -191,28 +290,16 @@ class MySpace extends Component {
                 filenames: JSON.stringify(this.state.selectedFilenames),
                 target_directory_path: this.state.selectedDirectoryPath,
             }
-            const response = await axios.post('/api/v1/my_space/file/copy', requestData)
+            const response = await axios.post('/api/v1/my_space/file/move', requestData)
             if (response.data.code !== '000000') {
                 return
             }
-            this.setState({ shouldLoadFiles: true, isCopyFileModalVisible: false })
-            message.success('复制成功')
+            this.setState({ shouldLoadFiles: true, isMoveFileModalVisible: false })
+            message.success('移动成功')
         } catch (err) {
-            message.error('复制文件')
+            message.error('移动文件')
         }
-        console.log('handleCopyFiles', this.state.selectedFilenames)
-        // this.setState({isCopyFileModalVisible: false})
-    }
-
-    // 打开移动文件对话框
-    showMoveFileModal = (selectedFileList) => {
-        this.setState({ selectedDirectoryPath: '', isMoveFileModalVisible: true, directories: [], selectedFilenames: selectedFileList })
-        this.refreshDirectoryList()
-    }
-    // TODO: 批量移动文件
-    handleMoveFiles = async () => {
         console.log('handleMoveFiles', this.state.selectedFilenames)
-        // this.setState({isMoveFileModalVisible: false})
     }
 
     // 重命名文件
@@ -514,6 +601,71 @@ class MySpace extends Component {
                         treeDataSimpleMode
                         onChange={(value) => this.setState({ selectedDirectoryPath: value })}
                         treeData={treeData}
+                    />
+                </Modal>
+
+                {/* 询问操作对话框 */}
+                <Modal
+                    title={this.state.actionModalTitle}
+                    visible={this.state.isActionModalVisible}
+                    footer={null}
+                    onCancel={() => this.hideActionModal({ type: 'cancel' })}
+                >
+                    <div>
+                        <h4>此位置已经包含同名文件。</h4>
+                        <p>请选择要执行的操作</p>
+                    </div>
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={["override", "rename", "skip"]}
+                        renderItem={item => {
+                            let actions = null
+                            let title = null
+                            if (item === 'override') {
+                                actions = [(
+                                    <Button
+                                        size="small"
+                                        icon={<SwapOutlined />}
+                                        danger
+                                        onClick={() => this.hideActionModal({ type: item })}
+                                    >
+                                        执行
+                                    </Button>
+                                )]
+                                title = "覆盖"
+                            } else if (item === 'rename') {
+                                actions = [(
+                                    <Button
+                                        size="small"
+                                        icon={<EditOutlined />}
+                                        onClick={() => this.hideActionModal({ type: item })}
+                                    >
+                                        执行
+                                    </Button>
+                                )]
+                                title = "重命名"
+                            } else {
+                                actions = [(
+                                    <Button
+                                        size="small"
+                                        icon={<RedoOutlined />}
+                                        onClick={() => this.hideActionModal({ type: item })}
+                                    >
+                                        执行
+                                    </Button>
+                                )]
+                                title = "跳过"
+                            }
+                            return (
+                                <List.Item
+                                    actions={actions}
+                                >
+                                    <List.Item.Meta
+                                        title={title}
+                                    />
+                                </List.Item>
+                            )
+                        }}
                     />
                 </Modal>
             </>
