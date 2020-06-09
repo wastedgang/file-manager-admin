@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal, List } from 'antd'
+import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal, List, Checkbox} from 'antd'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -27,6 +27,9 @@ import ExplorerBreadcrumb from './ExplorerBreadcrumb'
 import queryString from 'query-string'
 import filesize from 'filesize'
 import axios from 'axios'
+import iconRename from '@/assets/icon-rename.png'
+import iconReplace from '@/assets/icon-replace.png'
+import iconNext from '@/assets/icon-next.png'
 
 import './my-space.less'
 
@@ -560,7 +563,7 @@ class MySpace extends Component {
                 {/* 复制对话框 */}
                 <Modal
                     title="复制文件"
-                    visible={this.state.isCopyFileModalVisible}
+                    visible={this.state.isCopyFileModalVisible || true}
                     onCancel={() => this.setState({ isCopyFileModalVisible: false })}
                     onOk={this.handleCopyFiles}
                 >
@@ -604,18 +607,49 @@ class MySpace extends Component {
                     />
                 </Modal>
 
-                {/* 询问操作对话框 */}
+                {/* 询问操作对话框  */}
                 <Modal
                     title={this.state.actionModalTitle}
                     visible={this.state.isActionModalVisible}
                     footer={null}
                     onCancel={() => this.hideActionModal({ type: 'cancel' })}
+                    width= "400px"
                 >
                     <div>
                         <h4>此位置已经包含同名文件。</h4>
                         <p>请选择要执行的操作</p>
                     </div>
-                    <List
+                    <div className="list-wrapper">
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'override' })}>
+                            <div className="image-wrapper"><img src={iconReplace}></img></div>
+                            <div className="content-wrapper">
+                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>覆盖</div>
+                                <div style={{color:"#999"}}>此操作将删除目标文件夹同名文件，并复制该文件到目标文件夹</div>
+                            </div>
+                        </div>
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'rename' })}>
+                            <div className="image-wrapper"><img src={iconRename}></img></div>
+                            <div className="content-wrapper">
+                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>重命名</div>
+                                <div style={{color:"#999"}}>此操作将自动重命名该文件，并复制文件到目标文件夹</div>
+                            </div>
+                        </div>
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'skip' })}>
+                            <div className="image-wrapper"><img src={iconNext}></img></div>
+                            <div className="content-wrapper">
+                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>跳过</div>
+                                <div style={{color:"#999"}}>此操作将取消对该文件的复制，并开始执行下一个文件</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-btn">
+                        <div><Checkbox>对以后的文件进行此操作</Checkbox></div>
+                        <div>
+                            <Button size="small" style={{marginRight:"10px"}}>跳过</Button>
+                            <Button size="small">取消</Button>
+                        </div>
+                    </div>
+                    {/* <List
                         itemLayout="horizontal"
                         dataSource={["override", "rename", "skip"]}
                         renderItem={item => {
@@ -667,7 +701,7 @@ class MySpace extends Component {
                                 </List.Item>
                             )
                         }}
-                    />
+                    /> */}
                 </Modal>
             </>
         )
