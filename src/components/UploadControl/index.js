@@ -68,10 +68,10 @@ class UploadControl extends Component {
                     footer={null}
                 >
                     <div style={{display:'flex',justifyContent:'flex-start',alignItems:'center',boxSizing:"border-box",padding:'0 15px',margin:'10px 0'}}>
-                        <div style={{width:'20%'}}>选择目标目录:</div>
+                        <div style={{width:'24%'}}>选择目标目录:</div>
                         <TreeSelect
                             showSearch
-                            style={{ width: '80%', margin: "6px 0 12px 0" }}
+                            style={{ width: '76%'}}
                             value={this.state.selectedDirectoryPath}
                             treeDefaultExpandAll={true}
                             dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
