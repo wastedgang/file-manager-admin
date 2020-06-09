@@ -621,6 +621,7 @@ class MySpace extends Component {
                         renderItem={item => {
                             let actions = null
                             let title = null
+                            let description = null
                             if (item === 'override') {
                                 actions = [(
                                     <Button
