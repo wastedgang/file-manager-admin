@@ -572,8 +572,8 @@ class MySpace extends Component {
                         <TreeSelect
                             name="newDirectoryPath"
                             showSearch
-                            disabled={this.state.directories.length === 0}
-                            style={{ width: '76%', margin: "6px 0 12px 0" }}
+                            disabled={this.state.directories.length === 0 }
+                            style={{ width: '76%'}}
                             value={this.state.selectedDirectoryPath}
                             treeDefaultExpandAll={true}
                             dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
@@ -592,19 +592,22 @@ class MySpace extends Component {
                     onCancel={() => this.setState({ isMoveFileModalVisible: false })}
                     onOk={this.handleMoveFiles}
                 >
-                    <TreeSelect
-                        name="newDirectoryPath"
-                        showSearch
-                        disabled={this.state.directories.length === 0}
-                        style={{ width: '100%', margin: "6px 0 12px 0" }}
-                        value={this.state.selectedDirectoryPath}
-                        treeDefaultExpandAll={true}
-                        dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
-                        placeholder="请选择目标文件夹"
-                        treeDataSimpleMode
-                        onChange={(value) => this.setState({ selectedDirectoryPath: value })}
-                        treeData={treeData}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                        <div style={{ width: '24%' }}>请选择目标文件夹:</div>
+                        <TreeSelect
+                            name="newDirectoryPath"
+                            showSearch
+                            disabled={this.state.directories.length === 0}
+                            style={{ width: '76%' }}
+                            value={this.state.selectedDirectoryPath}
+                            treeDefaultExpandAll={true}
+                            dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
+                            placeholder="请选择目标文件夹"
+                            treeDataSimpleMode
+                            onChange={(value) => this.setState({ selectedDirectoryPath: value })}
+                            treeData={treeData}
+                        />
+                    </div>
                 </Modal>
 
                 {/* 询问操作对话框  */}
