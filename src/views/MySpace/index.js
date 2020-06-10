@@ -656,7 +656,7 @@ class MySpace extends Component {
                                         对以后的{this.state.remainPromptCount - 1 > 0 ? (this.state.remainPromptCount - 1) + '个' : null}文件进行此操作
                                 </Checkbox>
                                 </div>
-                            ) : null
+                            ) : <div> </div>
                         }
                         <div>
                             <Button size="small" style={{ marginRight: "10px" }} onClick={() => this.hideActionModal({ type: 'skip' })}>跳过</Button>

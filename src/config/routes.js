@@ -8,6 +8,7 @@ import {
     StoreSpaceList,
     GroupList,
     PublicSpace,
+    InitializeSetting
 } from '@/views'
 import { HomeOutlined, UserOutlined, SettingOutlined, ContainerOutlined, DatabaseOutlined, TeamOutlined, GlobalOutlined } from '@ant-design/icons'
 
@@ -15,6 +16,9 @@ import { HomeOutlined, UserOutlined, SettingOutlined, ContainerOutlined, Databas
 const routes = [{
     path: '/login',
     component: Login
+},{
+    path: '/initialize',
+    component: InitializeSetting
 }, {
     path: '/404',
     component: NotFound

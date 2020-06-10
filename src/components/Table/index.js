@@ -7,6 +7,7 @@ import propTypes from 'prop-types'
 import './table.less'
 import Column from './Column'
 import Checkbox from './Checkbox'
+import { getSpanWidth } from '@/assets/utils.js'
 
 export default class Table extends Component {
     headerRef = createRef()
@@ -194,7 +195,7 @@ export default class Table extends Component {
                                                                 }
 
                                                                 let itemRender = rowData[columnProps.dataIndex]
-                                                                let itemRenderWith = 'getWith'.width(String(itemRender))
+                                                                let itemRenderWith = getSpanWidth(String(itemRender))
                                                                 if (columnProps.render) {
                                                                     itemRender = columnProps.render(itemRender, rowData, index)
                                                                 }
