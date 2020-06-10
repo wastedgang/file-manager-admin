@@ -215,6 +215,7 @@ class MySpace extends Component {
             return
         }
 
+        let sameActionType = null
         const targetDirectoryFileMap = {}
         if (targetDirectoryPath !== sourceDirectoryPath) {
             try {
@@ -229,10 +230,11 @@ class MySpace extends Component {
                 message.error('网络错误')
                 return
             }
+        } else {
+            sameActionType = 'rename'
         }
         console.log(targetDirectoryFileMap)
 
-        let sameActionType = null
         for (let index = 0; index < selectedFilenames.length; index++) {
             const filename = selectedFilenames[index]
             // 计算需要询问的文件数量
@@ -244,29 +246,34 @@ class MySpace extends Component {
             }
             this.setState({ currentActionFilename: filename, remainPromptCount: remainPromptCount })
 
+            let currentActionType = 'rename'
             if (sameActionType === null && remainPromptCount > 0) {
                 // 需要询问
                 const action = await this.showActionModal('复制文件')
-                console.log('action', action)
+                currentActionType = action.type
+                if(action.shouldPerformSameAction) {
+                    sameActionType = action.type
+                }
+                // 取消则直接返回
+                if(currentActionType === 'cancel') {
+                    return
+                }
+            }
+            if(remainPromptCount > 0 && sameActionType) {
+                currentActionType = sameActionType
+            }
+            
+            try {
+                const requestData = {
+                    source_directory_path: sourceDirectoryPath,
+                    filename: filename,
+                    target_directory_path: targetDirectoryPath,
+                }
+                // const response = await axios.post('/api/v1/my_space/file/copy', requestData)
+            } catch(err) {
+                message.error('复制文件失败：' + filename)
             }
         }
-        return
-        try {
-            const requestData = {
-                source_directory_path: sourceDirectoryPath,
-                filenames: JSON.stringify(selectedFilenames),
-                target_directory_path: targetDirectoryPath,
-            }
-            // const response = await axios.post('/api/v1/my_space/file/copy', requestData)
-            // if (response.data.code !== '000000') {
-            //     return
-            // }
-            // this.setState({ shouldLoadFiles: true, isCopyFileModalVisible: false })
-            // message.success('复制成功')
-        } catch (err) {
-            message.error('复制文件')
-        }
-        console.log('handleCopyFiles', selectedFilenames)
     }
 
     // 打开移动文件对话框
@@ -614,30 +621,31 @@ class MySpace extends Component {
                 <Modal
                     title={this.state.actionModalTitle}
                     visible={this.state.isActionModalVisible}
-                    footer={null}
+                    footer={null}y
                     onCancel={() => this.hideActionModal({ type: 'cancel' })}
                     width="400px"
                 >
                     <div>
                         <h4>此位置已经包含同名文件。</h4>
+                    <div className="curent-file-name">当前文件：{this.state.currentActionFilename}</div>
                         <p>请选择要执行的操作</p>
                     </div>
                     <div className="list-wrapper">
-                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'override' })}>
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'override', shouldPerformSameAction: this.state.isPerformSameActionChecked })}>
                             <div className="image-wrapper"><img src={iconReplace}></img></div>
                             <div className="content-wrapper">
                                 <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>覆盖</div>
                                 <div style={{ color: "#999" }}>此操作将删除目标文件夹原同名文件，并复制该文件到目标文件夹</div>
                             </div>
                         </div>
-                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'rename' })}>
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'rename', shouldPerformSameAction: this.state.isPerformSameActionChecked })}>
                             <div className="image-wrapper"><img src={iconRename}></img></div>
                             <div className="content-wrapper">
                                 <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>重命名</div>
                                 <div style={{ color: "#999" }}>此操作将自动重命名该文件，并复制文件到目标文件夹</div>
                             </div>
                         </div>
-                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'skip' })}>
+                        <div className="list-item" onClick={() => this.hideActionModal({ type: 'skip', shouldPerformSameAction: this.state.isPerformSameActionChecked })}>
                             <div className="image-wrapper"><img src={iconNext}></img></div>
                             <div className="content-wrapper">
                                 <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>跳过</div>
@@ -659,7 +667,7 @@ class MySpace extends Component {
                             ) : <div> </div>
                         }
                         <div>
-                            <Button size="small" style={{ marginRight: "10px" }} onClick={() => this.hideActionModal({ type: 'skip' })}>跳过</Button>
+                            <Button size="small" style={{ marginRight: "10px" }} onClick={() => this.hideActionModal({ type: 'skip', shouldPerformSameAction: false })}>跳过</Button>
                             <Button size="small" onClick={() => this.hideActionModal({ type: 'cancel' })}>取消</Button>
                         </div>
                     </div>
