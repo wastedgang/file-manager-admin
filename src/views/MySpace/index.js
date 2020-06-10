@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal, List, Checkbox} from 'antd'
+import { Button, Space, Tooltip, Dropdown, Menu, message, Form, Input, TreeSelect, Modal, Checkbox } from 'antd'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -16,9 +16,6 @@ import {
     ScissorOutlined,
     FolderAddOutlined,
     ReloadOutlined,
-    SwapOutlined,
-    EditOutlined,
-    RedoOutlined
 } from '@ant-design/icons'
 
 import { MessageBox, ModalForm, Table, TableCard } from '@/components'
@@ -60,9 +57,11 @@ class MySpace extends Component {
         isMoveFileModalVisible: false,
 
         actionModalTitle: '',
+        currentActionFilename: '',
+        remainPromptCount: 0,
         isActionModalVisible: false,
         actionModalPromiseResolve: null,
-        shouldPerformSameAction: false,
+        isPerformSameActionChecked: false,
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -243,11 +242,12 @@ class MySpace extends Component {
                     remainPromptCount++
                 }
             }
+            this.setState({ currentActionFilename: filename, remainPromptCount: remainPromptCount })
 
             if (sameActionType === null && remainPromptCount > 0) {
                 // 需要询问
                 const action = await this.showActionModal('复制文件')
-                console.log(action)
+                console.log('action', action)
             }
         }
         return
@@ -563,7 +563,7 @@ class MySpace extends Component {
                 {/* 复制对话框 */}
                 <Modal
                     title="复制文件"
-                    visible={this.state.isCopyFileModalVisible || true}
+                    visible={this.state.isCopyFileModalVisible}
                     onCancel={() => this.setState({ isCopyFileModalVisible: false })}
                     onOk={this.handleCopyFiles}
                 >
@@ -572,8 +572,8 @@ class MySpace extends Component {
                         <TreeSelect
                             name="newDirectoryPath"
                             showSearch
-                            disabled={this.state.directories.length === 0 }
-                            style={{ width: '76%'}}
+                            disabled={this.state.directories.length === 0}
+                            style={{ width: '76%' }}
                             value={this.state.selectedDirectoryPath}
                             treeDefaultExpandAll={true}
                             dropdownStyle={{ maxHeight: 700, overflow: 'auto' }}
@@ -616,7 +616,7 @@ class MySpace extends Component {
                     visible={this.state.isActionModalVisible}
                     footer={null}
                     onCancel={() => this.hideActionModal({ type: 'cancel' })}
-                    width= "400px"
+                    width="400px"
                 >
                     <div>
                         <h4>此位置已经包含同名文件。</h4>
@@ -626,85 +626,43 @@ class MySpace extends Component {
                         <div className="list-item" onClick={() => this.hideActionModal({ type: 'override' })}>
                             <div className="image-wrapper"><img src={iconReplace}></img></div>
                             <div className="content-wrapper">
-                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>覆盖</div>
-                                <div style={{color:"#999"}}>此操作将删除目标文件夹同名文件，并复制该文件到目标文件夹</div>
+                                <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>覆盖</div>
+                                <div style={{ color: "#999" }}>此操作将删除目标文件夹原同名文件，并复制该文件到目标文件夹</div>
                             </div>
                         </div>
                         <div className="list-item" onClick={() => this.hideActionModal({ type: 'rename' })}>
                             <div className="image-wrapper"><img src={iconRename}></img></div>
                             <div className="content-wrapper">
-                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>重命名</div>
-                                <div style={{color:"#999"}}>此操作将自动重命名该文件，并复制文件到目标文件夹</div>
+                                <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>重命名</div>
+                                <div style={{ color: "#999" }}>此操作将自动重命名该文件，并复制文件到目标文件夹</div>
                             </div>
                         </div>
                         <div className="list-item" onClick={() => this.hideActionModal({ type: 'skip' })}>
                             <div className="image-wrapper"><img src={iconNext}></img></div>
                             <div className="content-wrapper">
-                                <div style={{fontWeight: 'border',color: "#000",letterSpacing:'2px'}}>跳过</div>
-                                <div style={{color:"#999"}}>此操作将取消对该文件的复制，并开始执行下一个文件</div>
+                                <div style={{ fontWeight: 'border', color: "#000", letterSpacing: '2px' }}>跳过</div>
+                                <div style={{ color: "#999" }}>此操作将取消对该文件的复制</div>
                             </div>
                         </div>
                     </div>
-                    <div class="footer-btn">
-                        <div><Checkbox>对以后的文件进行此操作</Checkbox></div>
+                    <div className="footer-btn">
+                        {
+                            this.state.remainPromptCount > 1 ? (
+                                <div>
+                                    <Checkbox
+                                        checked={this.state.isPerformSameActionChecked}
+                                        onChange={(e) => this.setState({ isPerformSameActionChecked: e.target.checked })}
+                                    >
+                                        对以后的{this.state.remainPromptCount - 1 > 0 ? (this.state.remainPromptCount - 1) + '个' : null}文件进行此操作
+                                </Checkbox>
+                                </div>
+                            ) : null
+                        }
                         <div>
-                            <Button size="small" style={{marginRight:"10px"}}>跳过</Button>
-                            <Button size="small">取消</Button>
+                            <Button size="small" style={{ marginRight: "10px" }} onClick={() => this.hideActionModal({ type: 'skip' })}>跳过</Button>
+                            <Button size="small" onClick={() => this.hideActionModal({ type: 'cancel' })}>取消</Button>
                         </div>
                     </div>
-                    {/* <List
-                        itemLayout="horizontal"
-                        dataSource={["override", "rename", "skip"]}
-                        renderItem={item => {
-                            let actions = null
-                            let title = null
-                            let description = null
-                            if (item === 'override') {
-                                actions = [(
-                                    <Button
-                                        size="small"
-                                        icon={<SwapOutlined />}
-                                        danger
-                                        onClick={() => this.hideActionModal({ type: item })}
-                                    >
-                                        执行
-                                    </Button>
-                                )]
-                                title = "覆盖"
-                            } else if (item === 'rename') {
-                                actions = [(
-                                    <Button
-                                        size="small"
-                                        icon={<EditOutlined />}
-                                        onClick={() => this.hideActionModal({ type: item })}
-                                    >
-                                        执行
-                                    </Button>
-                                )]
-                                title = "重命名"
-                            } else {
-                                actions = [(
-                                    <Button
-                                        size="small"
-                                        icon={<RedoOutlined />}
-                                        onClick={() => this.hideActionModal({ type: item })}
-                                    >
-                                        执行
-                                    </Button>
-                                )]
-                                title = "跳过"
-                            }
-                            return (
-                                <List.Item
-                                    actions={actions}
-                                >
-                                    <List.Item.Meta
-                                        title={title}
-                                    />
-                                </List.Item>
-                            )
-                        }}
-                    /> */}
                 </Modal>
             </>
         )
