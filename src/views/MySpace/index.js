@@ -319,6 +319,10 @@ class MySpace extends Component {
             message.warning('请选择正确的目标文件夹')
             return
         }
+        if (sourceDirectoryPath === targetDirectoryPath) {
+            message.warning('源文件名和目标文件名相同')
+            return
+        }
 
         let sameActionType = null
         const targetDirectoryFileMap = {}
@@ -389,9 +393,7 @@ class MySpace extends Component {
                 if (response.data.code !== '000000') {
                     return
                 }
-                if (targetDirectoryPath === sourceDirectoryPath) {
-                    this.setState({ shouldLoadFiles: true })
-                }
+                this.setState({ shouldLoadFiles: true })
             } catch (err) {
                 message.error('移动文件失败：' + filename)
                 return
@@ -467,7 +469,7 @@ class MySpace extends Component {
     // 返回上一级
     goUpperLevel = () => {
         const currentPath = !this.state.currentPath ? '/' : this.state.currentPath
-        if(currentPath === '' || currentPath === '/') {
+        if (currentPath === '' || currentPath === '/') {
             return
         }
         let targetPath = currentPath.substring(0, currentPath.lastIndexOf('/'))
