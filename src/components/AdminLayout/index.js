@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { withRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { withRouter, Redirect, Route, Switch, matchPath } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { Layout, Menu } from 'antd'
+import { Layout, Menu, message } from 'antd'
 
 import PropTypes from 'prop-types'
 
@@ -14,6 +14,64 @@ const mapState = state => ({
 @connect(mapState)
 @withRouter
 class AdminLayout extends Component {
+    getRouteInfoByPathname = (pathname) => {
+        const finder = (routeInfo, pathname) => {
+            if (!routeInfo) {
+                return null
+            }
+            const matchInfo = matchPath(pathname, {
+                exact: true,
+                strict: true,
+                path: routeInfo.path,
+            })
+            if (matchInfo !== null) {
+                return routeInfo
+            }
+            if (routeInfo.children && routeInfo.children instanceof Array) {
+                for (let childRouteInfo of routeInfo.children) {
+                    const result = finder(childRouteInfo, pathname)
+                    if (result !== null) {
+                        return result
+                    }
+                }
+            }
+            return null
+        }
+        return finder(this.props.route, pathname)
+    }
+
+    checkPermission = () => {
+        const routeInfo = this.getRouteInfoByPathname(this.props.location.pathname)
+        if(routeInfo === null || !routeInfo.menu || !(routeInfo.menu.roles instanceof Array)) {
+            return
+        }
+        if(!this.props.isLogin) {
+            message.error('请先登录')
+            this.props.history.replace('/login')
+            return
+        }
+
+        const requiredRoles = routeInfo.menu.roles
+        let found = false
+        for(let requiredRole of requiredRoles) {
+            if(requiredRole === this.props.userInfo.type) {
+                found = true
+            }
+        }
+        if(!found) {
+            message.error('权限不足')
+            this.props.history.replace('/login')
+        }
+    }
+
+    componentDidMount() {
+        this.checkPermission()
+    }
+
+    componentDidUpdate() {
+        this.checkPermission()
+    }
+
     onMenuClick = ({ key }) => {
         if (this.props.location.pathname !== key) {
             this.props.history.push(key)
@@ -99,7 +157,7 @@ class AdminLayout extends Component {
 
         let routeList = []
         // 有子级路由的页面默认跳转 路由信息redirect，若无redirect信息则跳转首页
-        if (routeInfo.children && routeInfo.children.length && routeInfo.children.map) {
+        if (routeInfo.children && routeInfo.children instanceof Array && routeInfo.children.length) {
             routeList.push((
                 <Redirect key={routeInfo.path} to={routeInfo.redirect ? routeInfo.redirect : '/'} from={routeInfo.path} exact />
             ))
@@ -108,6 +166,22 @@ class AdminLayout extends Component {
         else {
             routeList.push((
                 <Route path={routeInfo.path} key={routeInfo.path} render={(props) => {
+                    // 检查权限
+                    if (routeInfo.menu && routeInfo.menu.roles instanceof Array) {
+                        if (!this.props.isLogin) {
+                            return <Redirect key={routeInfo.path} to={'/login'} from={routeInfo.path} exact />
+                        }
+                        const requiredRoles = routeInfo.menu.roles
+                        let found = false
+                        for (let requiredRole of requiredRoles) {
+                            if (requiredRole === this.props.userInfo.type) {
+                                found = true
+                            }
+                        }
+                        if (!found) {
+                            return <Redirect key={routeInfo.path} to={'/login'} from={routeInfo.path} exact />
+                        }
+                    }
                     return <routeInfo.component {...props} route={routeInfo} />
                 }} />
             ))

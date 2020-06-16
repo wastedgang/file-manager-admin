@@ -5,6 +5,7 @@ import qs from 'qs'
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
 const requestInterceptor = (config) => {
+    config.headers['Token'] = localStorage.getItem('accessToken') || ''
     if(config.method === 'post' || config.method === 'put' || config.method === 'patch') {
         if(config.data instanceof FormData) {
             return config
@@ -40,6 +41,7 @@ const underlineToCamelCase = (object) => {
     }
     return object
 }
+
 const responseInterceptor = (response) => {
     if (response.status === 200 && response.data.code) {
         if (response.data.code === '000000') {

@@ -1,11 +1,6 @@
-import { message } from 'antd'
 import axios from 'axios'
 
 import actionTypes from './actionTypes'
-
-const startLogin = () => {
-    return { type: actionTypes.START_LOGIN }
-}
 
 const loginSuccess = (userInfo) => {
     return { type: actionTypes.LOGIN_SUCCESS, payload: { userInfo } }
@@ -20,31 +15,19 @@ const loginFailed = () => {
     return { type: actionTypes.LOGIN_FAILED }
 }
 
-export const login = (loginInfo) => {
+export const login = (token, userInfo) => {
     return async (dispatch) => {
-        dispatch(startLogin())
-        try {
-            const response = await axios.post('/api/v1/auth/login', loginInfo)
-            if (response.data.code === '000000') {
-                window.localStorage.setItem('userInfo', JSON.stringify(response.data.data.user))
-                dispatch(loginSuccess(response.data.data.user))
-                return
-            }
-            dispatch(loginFailed())
-        } catch (err) {
-            dispatch(loginFailed())
-        }
+        window.localStorage.setItem('accessToken', token)
+        window.localStorage.setItem('userInfo', JSON.stringify(userInfo))
+        dispatch(loginSuccess(userInfo))
     }
 }
 
 export const logout = () => {
     return async (dispatch) => {
         dispatch(loginFailed())
-        try {
-            await axios.post('/api/v1/auth/logout')
-        } catch (err) {
-            message.error('网络错误')
-        }
+        window.localStorage.removeItem('accessToken')
+        window.localStorage.removeItem('userInfo')
     }
 }
 

@@ -19,7 +19,7 @@ class UserControl extends Component {
     }
 
     componentDidMount() {
-        this.props.refreshCurrentUserinfo()
+        // this.props.refreshCurrentUserinfo()
     }
 
     // 退出登录
